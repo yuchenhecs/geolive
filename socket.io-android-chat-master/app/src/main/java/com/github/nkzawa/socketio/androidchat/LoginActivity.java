@@ -15,7 +15,8 @@ import io.socket.emitter.Emitter;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import org.json.JSONException;
-import org.json.JSONObject;
+// import org.json.JSONObject;
+import org.json.simple.JSONObject;
 
 import java.net.URISyntaxException;
 
@@ -26,8 +27,10 @@ import java.net.URISyntaxException;
 public class LoginActivity extends Activity {
 
     private EditText mUsernameView;
+    private EditText mRoomidView;
 
     private String mUsername;
+    private String mRoomid;
 
     private Socket mSocket;
     {
@@ -46,7 +49,8 @@ public class LoginActivity extends Activity {
 
         // Set up the login form.
         mUsernameView = (EditText) findViewById(R.id.username_input);
-        mUsernameView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        mRoomidView = (EditText) findViewById(R.id.roomid_input);
+        mRoomidView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
                 if (id == R.id.login || id == EditorInfo.IME_NULL) {
@@ -86,6 +90,7 @@ public class LoginActivity extends Activity {
 
         // Store values at the time of the login attempt.
         String username = mUsernameView.getText().toString().trim();
+        String roomid = mRoomidView.getText().toString().trim();
 
         // Check for a valid username.
         if (TextUtils.isEmpty(username)) {
@@ -96,16 +101,30 @@ public class LoginActivity extends Activity {
             return;
         }
 
+        if (TextUtils.isEmpty(roomid)) {
+            // There was an error; don't attempt login and focus the first
+            // form field with an error.
+            mRoomidView.setError(getString(R.string.error_field_required));
+            mRoomidView.requestFocus();
+            return;
+        }
+
         mUsername = username;
+        mRoomid = roomid;
 
         // perform the user login attempt.
-        mSocket.emit("add user", username);
+
+        JSONObject data = new JSONObject();
+        data.put("username", username);
+        data.put("roomid", roomid);
+//        mSocket.emit("add user", username, roomid);
+        mSocket.emit("add user", data);
     }
 
     private Emitter.Listener onLogin = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            JSONObject data = (JSONObject) args[0];
+            org.json.JSONObject data = (org.json.JSONObject) args[0];
 
             int numUsers;
             try {

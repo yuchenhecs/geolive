@@ -25,25 +25,39 @@ io.on('connection', function (socket) {
   // when the client emits 'new message', this listens and executes
   socket.on('new message', function (data) {
     // we tell the client to execute 'new message'
-    socket.broadcast.emit('new message', {
+    socket.broadcast.to(socket.roomid).emit('new message', {
       username: socket.username,
       message: data
     });
+
+    // console.log(socket.id);
+    console.log(socket.username, socket.roomid);
   });
 
   // when the client emits 'add user', this listens and executes
-  socket.on('add user', function (username) {
+  socket.on('add user', function (data) {
     // we store the username in the socket session for this client
-    socket.username = username;
+    // console.log(data);
+    var parsedData = JSON.parse(data);
+    // console.log(parsedData["username"], parsedData["roomid"]);
+
+    socket.username = parsedData["username"];
+    socket.roomid = parsedData["roomid"];
+
     // add the client's username to the global list
-    usernames[username] = username;
+    usernames[socket.username] = socket.username;
     ++numUsers;
     addedUser = true;
+    socket.join(socket.roomid);
+
+    // console.log(io.sockets.adapter.rooms[socket.roomid]);
+
     socket.emit('login', {
       numUsers: numUsers
     });
+
     // echo globally (all clients) that a person has connected
-    socket.broadcast.emit('user joined', {
+    socket.broadcast.to(socket.roomid).emit('user joined', {
       username: socket.username,
       numUsers: numUsers
     });

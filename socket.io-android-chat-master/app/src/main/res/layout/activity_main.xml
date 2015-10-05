@@ -9,5 +9,6 @@
     <fragment
             class="com.github.nkzawa.socketio.androidchat.MainFragment"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+        tools:layout="@layout/activity_login" />
 </FrameLayout>

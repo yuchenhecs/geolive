@@ -7,4 +7,7 @@
     <string name="action_sign_in_short">Join</string>
 
     <string name="error_field_required">This field is required</string>
+
+    <string name="prompt_roomid">What room you want to join</string>
+
 </resources>
