@@ -4,7 +4,7 @@ var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 var port = process.env.PORT || 3000;
-
+var Room = require('./room.js')
 
 server.listen(port, function () {
   console.log('Server listening at port %d', port);
@@ -16,8 +16,10 @@ app.use(express.static(__dirname + '/public'));
 // Chatroom
 
 // usernames which are currently connected to the chat
-var usernames = {};
-var numUsers = 0;
+
+// room info
+//var users = {};
+var rooms = {};
 
 io.on('connection', function (socket) {
   var addedUser = false;
@@ -34,6 +36,7 @@ io.on('connection', function (socket) {
     console.log(socket.username, socket.roomid);
   });
 
+
   // when the client emits 'add user', this listens and executes
   socket.on('add user', function (data) {
     // we store the username in the socket session for this client
@@ -45,13 +48,24 @@ io.on('connection', function (socket) {
     socket.roomid = parsedData["roomid"];
 
     // add the client's username to the global list
-    usernames[socket.username] = socket.username;
-    ++numUsers;
     addedUser = true;
     socket.join(socket.roomid);
 
-    // console.log(io.sockets.adapter.rooms[socket.roomid]);
+    var numUsers=1;    
+    if(rooms[socket.roomid] == null){
+        //create a new room
+        var room = new Room("name", socket.roomid , socket.username);
+        room.addPerson(socket.username);  
+        rooms[socket.roomid] = room;
+    }else{
+        //load data from existing room
+        var room = rooms[socket.roomid];
+        room.addPerson(socket.username);
+        numUsers = room.getUserNumber();
+    }
+    
 
+    // console.log(io.sockets.adapter.rooms[socket.roomid]);
     socket.emit('login', {
       numUsers: numUsers
     });
@@ -65,14 +79,14 @@ io.on('connection', function (socket) {
 
   // when the client emits 'typing', we broadcast it to others
   socket.on('typing', function () {
-    socket.broadcast.emit('typing', {
+    socket.broadcast.to(socket.roomid).emit('typing', {
       username: socket.username
     });
   });
 
   // when the client emits 'stop typing', we broadcast it to others
   socket.on('stop typing', function () {
-    socket.broadcast.emit('stop typing', {
+    socket.broadcast.to(socket.roomid).emit('stop typing', {
       username: socket.username
     });
   });
@@ -81,11 +95,19 @@ io.on('connection', function (socket) {
   socket.on('disconnect', function () {
     // remove the username from global usernames list
     if (addedUser) {
-      delete usernames[socket.username];
-      --numUsers;
+      if(addedUser==true)
+        console.log("disconnect");
+      var room = rooms[socket.roomid];
 
+      var numUsers=0;    
+      if(room){
+        //console.log(room);
+        room.removePerson(socket.username);
+        numUsers = room.getUserNumber();
+      }
+      
       // echo globally that this client has left
-      socket.broadcast.emit('user left', {
+      socket.broadcast.to(socket.roomid).emit('user left', {
         username: socket.username,
         numUsers: numUsers
       });
