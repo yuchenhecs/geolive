@@ -4,7 +4,17 @@ var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 var port = process.env.PORT || 3000;
-var Room = require('./room.js')
+var Room = require('./room.js');
+var mongoose = require('mongoose');
+
+mongoose.connect('mongodb://127.0.0.1:27017/project');
+
+var roomSchema = new mongoose.Schema({ id: 'string', name: 'string',num_users: 'string',tag: 'string' });
+
+var db = mongoose.connection;
+
+var rooms_data = mongoose.model('rooms', roomSchema);
+
 
 server.listen(port, function () {
   console.log('Server listening at port %d', port);
@@ -23,6 +33,40 @@ var rooms = {};
 
 io.on('connection', function (socket) {
   var addedUser = false;
+
+  socket.on('room search', function (data) {
+    // we tell the client to execute 'new message'
+    
+    socket.emit('login', {
+      numUsers: 1
+    });
+
+
+
+    var result = "x";
+    
+    rooms_data.find({ name: new RegExp(data,'i') },'id',function (err, room_info) {
+            // You get a model instance all setup and ready!
+      result = room_info.map(function(r) { return r.id; });
+
+      //result=room_info.id;
+
+      console.log(result);
+//      db.close();       
+      socket.emit('search result', {
+        roomname: result
+      });  
+    });
+    
+
+    
+
+    // console.log(socket.id);
+    console.log(data);
+  });
+
+
+
 
   // when the client emits 'new message', this listens and executes
   socket.on('new message', function (data) {
