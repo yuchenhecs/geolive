@@ -5,6 +5,8 @@ var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 var port = process.env.PORT || 3000;
 var Room = require('./room.js');
+var Trie = require('./trie.js');
+
 var mongoose = require('mongoose');
 
 mongoose.connect('mongodb://127.0.0.1:27017/project');
@@ -26,10 +28,11 @@ app.use(express.static(__dirname + '/public'));
 // Chatroom
 
 // usernames which are currently connected to the chat
-
 // room info
 //var users = {};
 var rooms = {};
+
+var AutoComplete= new Trie();
 
 io.on('connection', function (socket) {
   var addedUser = false;
@@ -41,15 +44,18 @@ io.on('connection', function (socket) {
       numUsers: 1
     });
 
-
+    AutoComplete.insertString(data.toLowerCase(),data);
+    
+    AutoComplete.proceedCursor(data.toLowerCase().charAt(0));
+    console.log(AutoComplete.getTopk());
+    AutoComplete.resetCursor();
 
     var result = "x";
     
+
     rooms_data.find({ name: new RegExp(data,'i') },'id',function (err, room_info) {
             // You get a model instance all setup and ready!
       result = room_info.map(function(r) { return r.id; });
-
-      //result=room_info.id;
 
       console.log(result);
 //      db.close();       
