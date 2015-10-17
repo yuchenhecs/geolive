@@ -33,6 +33,7 @@ import java.util.List;
 
 /**
  * A login screen that offers login via email/password.
+ * TODO: skip login if user has already logged in
  */
 public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
 

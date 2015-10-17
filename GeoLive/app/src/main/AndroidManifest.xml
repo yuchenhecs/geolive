@@ -26,6 +26,10 @@
             android:name=".MainActivity"
             android:label="@string/title_activity_main" >
         </activity>
+        <activity
+            android:name=".ChatRoomActivity"
+            android:label="@string/title_activity_chat_room" >
+        </activity>
     </application>
 
 </manifest>

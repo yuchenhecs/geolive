@@ -8,6 +8,8 @@ import android.support.v4.app.FragmentManager;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -18,6 +20,9 @@ import android.support.v4.widget.DrawerLayout;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
@@ -25,6 +30,9 @@ public class MainActivity extends AppCompatActivity
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
     private NavigationDrawerFragment mNavigationDrawerFragment;
+
+    private RecyclerView mRecyclerView;
+    private List<ChatRoom> chatRooms;
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
@@ -44,6 +52,13 @@ public class MainActivity extends AppCompatActivity
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
+
+
+        mRecyclerView = (RecyclerView) findViewById(R.id.loc_reco_recycler_view);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        initializeData();
+        initializeAdapter();
+
     }
 
     @Override
@@ -145,4 +160,17 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+
+    private void initializeData() {
+        chatRooms = new ArrayList<>();
+        chatRooms.add(new ChatRoom("Room 1"));
+        chatRooms.add(new ChatRoom("Room 2"));
+        chatRooms.add(new ChatRoom("Room 3"));
+    }
+
+
+    private void initializeAdapter() {
+        LocRecoRecyclerViewAdapter locRecoRecyclerViewAdapter = new LocRecoRecyclerViewAdapter(chatRooms);
+        mRecyclerView.setAdapter(locRecoRecyclerViewAdapter);
+    }
 }
