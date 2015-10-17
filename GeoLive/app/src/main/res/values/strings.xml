@@ -48,4 +48,8 @@
     <string name="message_user_joined">%s joined</string>
     <string name="message_user_left">%s left</string>
     <string name="user_action_typing">is typing</string>
+
+    <string name = "text">Enter</string>
+    <string name = "search">Search</string>
+    <string name = "no_records">There are no records</string>
 </resources>
