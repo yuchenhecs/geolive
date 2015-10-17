@@ -13,16 +13,16 @@ import java.util.List;
 /**
  * Created by qiuding on 10/17/2015.
  */
-public class LocRecoRecyclerViewAdapter extends RecyclerView.Adapter<LocRecoRecyclerViewAdapter.RecommendationViewHolder> {
+public class LocRecoRecyclerViewAdapter extends RecyclerView.Adapter<LocRecoRecyclerViewAdapter.ViewHolder> {
 
-    public static class RecommendationViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
 
         CardView cardView;
         TextView roomTitle;
         ChatRoom currentRoom;
 
 
-        RecommendationViewHolder(final View itemView) {
+        ViewHolder(final View itemView) {
             super(itemView);
             cardView = (CardView) itemView.findViewById(R.id.card_view);
             roomTitle = (TextView) itemView.findViewById(R.id.room_title);
@@ -37,11 +37,11 @@ public class LocRecoRecyclerViewAdapter extends RecyclerView.Adapter<LocRecoRecy
     }
 
 
-    List<ChatRoom> chatRooms;
+    List<ChatRoom> mChatRooms;
 
 
     LocRecoRecyclerViewAdapter(List<ChatRoom> chatRooms) {
-        this.chatRooms = chatRooms;
+        this.mChatRooms = chatRooms;
     }
 
 
@@ -52,23 +52,23 @@ public class LocRecoRecyclerViewAdapter extends RecyclerView.Adapter<LocRecoRecy
 
 
     @Override
-    public RecommendationViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int i) {
         View view = LayoutInflater
-                .from(viewGroup.getContext())
-                .inflate(R.layout.loc_reco_card_view, viewGroup, false);
-        return new RecommendationViewHolder(view);
+                .from(parent.getContext())
+                .inflate(R.layout.item_loc_reco_card_view, parent, false);
+        return new ViewHolder(view);
     }
 
 
     @Override
-    public void onBindViewHolder(RecommendationViewHolder recommendationViewHolder, int i) {
-        recommendationViewHolder.roomTitle.setText(chatRooms.get(i).getTitle());
-        recommendationViewHolder.currentRoom = chatRooms.get(i);
+    public void onBindViewHolder(ViewHolder viewHolder, int i) {
+        viewHolder.roomTitle.setText(mChatRooms.get(i).getTitle());
+        viewHolder.currentRoom = mChatRooms.get(i);
     }
 
 
     @Override
     public int getItemCount() {
-        return chatRooms.size();
+        return mChatRooms.size();
     }
 }

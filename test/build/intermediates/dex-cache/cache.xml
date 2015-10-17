@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="C:\Users\ethan\Dropbox\Git\GeoLive\test\app\build\intermediates\exploded-aar\com.android.support\support-v4\21.0.3\jars\libs\internal_impl-21.0.3.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="01ec05bfbafcc07646ba813000bf2ef11742dd03">
+        <dex dex="C:\Users\ethan\Dropbox\Git\GeoLive\test\app\build\intermediates\pre-dexed\debug\internal_impl-21.0.3-052001d30f97e9f4c02c1dbca1a5b118b6cead92.jar" />
+    </item>
+    <item
+        jar="C:\Users\ethan\.gradle\caches\modules-2\files-2.1\io.socket\socket.io-client\0.6.1\81cd1f1489968207e61b269dc0964f34e7b5a544\socket.io-client-0.6.1.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="81cd1f1489968207e61b269dc0964f34e7b5a544">
+        <dex dex="C:\Users\ethan\Dropbox\Git\GeoLive\test\app\build\intermediates\pre-dexed\debug\socket.io-client-0.6.1-e5d95d76201b369c25fcc1f96ef46b3016296c91.jar" />
+    </item>
+    <item
+        jar="C:\Users\ethan\.gradle\caches\modules-2\files-2.1\com.squareup.okio\okio\1.4.0\5b72bf48563ea8410e650de14aa33ff69a3e8c35\okio-1.4.0.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="5b72bf48563ea8410e650de14aa33ff69a3e8c35">
+        <dex dex="C:\Users\ethan\Dropbox\Git\GeoLive\test\app\build\intermediates\pre-dexed\debug\okio-1.4.0-7b32645cfb6068b7d7db5fc212347561610145b2.jar" />
+    </item>
+    <item
+        jar="C:\Users\ethan\Dropbox\Git\GeoLive\test\app\build\intermediates\exploded-aar\com.android.support\support-v4\21.0.3\jars\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="2c91c949a45a21cdecf26e03951e46c7beec9ad8">
+        <dex dex="C:\Users\ethan\Dropbox\Git\GeoLive\test\app\build\intermediates\pre-dexed\debug\classes-6268587d9eb891fabde69697b2848ab2c73773c2.jar" />
+    </item>
+    <item
+        jar="C:\Users\ethan\Dropbox\Git\GeoLive\test\app\build\intermediates\exploded-aar\com.android.support\appcompat-v7\21.0.3\jars\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="81d42bf983a8741f4888a6e333e454e4a5e0eeb7">
+        <dex dex="C:\Users\ethan\Dropbox\Git\GeoLive\test\app\build\intermediates\pre-dexed\debug\classes-8e4d3f4ec1469e2ca3d5581156692b227b567bd1.jar" />
+    </item>
+    <item
+        jar="C:\Users\ethan\.gradle\caches\modules-2\files-2.1\io.socket\engine.io-client\0.6.1\39d4884a8c83649a24538ebc3674110d8b26db38\engine.io-client-0.6.1.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="39d4884a8c83649a24538ebc3674110d8b26db38">
+        <dex dex="C:\Users\ethan\Dropbox\Git\GeoLive\test\app\build\intermediates\pre-dexed\debug\engine.io-client-0.6.1-ce42039d8b162ae7767a0f1336b42649b6fc5447.jar" />
+    </item>
+    <item
+        jar="C:\Users\ethan\.gradle\caches\modules-2\files-2.1\com.squareup.okhttp\okhttp-ws\2.4.0\69206d28966656052a982ceded583abdeb41cf63\okhttp-ws-2.4.0.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="69206d28966656052a982ceded583abdeb41cf63">
+        <dex dex="C:\Users\ethan\Dropbox\Git\GeoLive\test\app\build\intermediates\pre-dexed\debug\okhttp-ws-2.4.0-b7584db504b1137314222c5c11e8def45d23ce2f.jar" />
+    </item>
+    <item
+        jar="C:\Users\ethan\.gradle\caches\modules-2\files-2.1\com.squareup.okhttp\okhttp\2.4.0\40340c0748190fe897baf7bffbc1b282734294e5\okhttp-2.4.0.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="40340c0748190fe897baf7bffbc1b282734294e5">
+        <dex dex="C:\Users\ethan\Dropbox\Git\GeoLive\test\app\build\intermediates\pre-dexed\debug\okhttp-2.4.0-e39bbd24e0ec3084eb4bd2cd54bc067475450d25.jar" />
+    </item>
+    <item
+        jar="C:\Users\ethan\Dropbox\Git\GeoLive\test\app\build\intermediates\exploded-aar\com.android.support\recyclerview-v7\21.0.3\jars\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="4b8945fc23a7461c6fdde15753456d64b0a9358b">
+        <dex dex="C:\Users\ethan\Dropbox\Git\GeoLive\test\app\build\intermediates\pre-dexed\debug\classes-301b882dbcef2a0d49fd47e5bcbd3fee8c57a92c.jar" />
+    </item>
+    <item
+        jar="C:\Users\ethan\AppData\Local\Android\sdk\extras\android\m2repository\com\android\support\support-annotations\21.0.3\support-annotations-21.0.3.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="4b74cefe1f0c1b819e7260c8627a14674e37fd35">
+        <dex dex="C:\Users\ethan\Dropbox\Git\GeoLive\test\app\build\intermediates\pre-dexed\debug\support-annotations-21.0.3-25e8e204394c4654bde9369f9c590c81e4c3ce3d.jar" />
+    </item>
+
+</items>
