@@ -1,24 +1,20 @@
 package com.uiuc.tbdex.geolive;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
-import android.widget.ArrayAdapter;
-import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +28,10 @@ public class MainActivity extends AppCompatActivity
     private NavigationDrawerFragment mNavigationDrawerFragment;
 
     private RecyclerView mRecyclerView;
-    private List<ChatRoom> chatRooms;
+    private List<ChatRoom> mChatRooms;
+
+    // TODO: bad, find a better way
+    protected static String mUsername;
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
@@ -53,6 +52,8 @@ public class MainActivity extends AppCompatActivity
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
+        Intent intent = getIntent();
+        mUsername = intent.getStringExtra("username");
 
         mRecyclerView = (RecyclerView) findViewById(R.id.loc_reco_recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -162,15 +163,22 @@ public class MainActivity extends AppCompatActivity
 
 
     private void initializeData() {
-        chatRooms = new ArrayList<>();
-        chatRooms.add(new ChatRoom("Room 1"));
-        chatRooms.add(new ChatRoom("Room 2"));
-        chatRooms.add(new ChatRoom("Room 3"));
+        mChatRooms = new ArrayList<>();
+        mChatRooms.add(new ChatRoom("Room 1"));
+        mChatRooms.add(new ChatRoom("Room 2"));
+        mChatRooms.add(new ChatRoom("Room 3"));
     }
 
 
     private void initializeAdapter() {
-        LocRecoRecyclerViewAdapter locRecoRecyclerViewAdapter = new LocRecoRecyclerViewAdapter(chatRooms);
+        LocRecoRecyclerViewAdapter locRecoRecyclerViewAdapter = new LocRecoRecyclerViewAdapter(getApplicationContext(), mUsername, mChatRooms);
         mRecyclerView.setAdapter(locRecoRecyclerViewAdapter);
     }
+
+//    private void enterChatRoom(String chatRoomTitle) {
+//        Intent intent = new Intent(this, ChatRoomActivity.class);
+//        intent.putExtra("username", mUsername);
+//        intent.putExtra("roomtitle", chatRoomTitle);
+//        startActivity(intent);
+//    }
 }
