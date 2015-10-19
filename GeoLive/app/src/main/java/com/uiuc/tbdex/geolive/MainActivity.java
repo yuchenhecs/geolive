@@ -30,8 +30,7 @@ public class MainActivity extends AppCompatActivity
     private RecyclerView mRecyclerView;
     private List<ChatRoom> mChatRooms;
 
-    // TODO: bad, find a better way
-    protected static String mUsername;
+    private String mUsername;
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.

@@ -75,6 +75,7 @@ public class ChatRoomActivity extends AppCompatActivity {
             }
         });
 
+
         // send button
         ImageButton sendButton = (ImageButton) findViewById(R.id.send_button);
         sendButton.setOnClickListener(new View.OnClickListener() {
@@ -99,6 +100,8 @@ public class ChatRoomActivity extends AppCompatActivity {
         mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
         mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
         mSocket.off("new message", onNewMessage);
+        mSocket.off("user joined", onUserJoined);
+        mSocket.off("user left", onUserLeft);
     }
 
     private void attemptLogin() {
@@ -115,6 +118,18 @@ public class ChatRoomActivity extends AppCompatActivity {
         mAdapter.notifyItemInserted(mMessages.size() - 1);
         scrollToBottom();
     }
+
+    private void addLog(String message) {
+        mMessages.add(new Message.Builder(Message.TYPE_LOG)
+                .message(message).build());
+        mAdapter.notifyItemInserted(mMessages.size() - 1);
+        scrollToBottom();
+    }
+
+    private void addParticipantsLog(int numUsers) {
+        addLog(getResources().getQuantityString(R.plurals.message_participants, numUsers, numUsers));
+    }
+
 
     private void attemptSend() {
         if (mUsername == null) return;
@@ -141,8 +156,8 @@ public class ChatRoomActivity extends AppCompatActivity {
         mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
         mSocket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
         mSocket.on("new message", onNewMessage);
-//        mSocket.on("user joined", onUserJoined);
-//        mSocket.on("user left", onUserLeft);
+        mSocket.on("user joined", onUserJoined);
+        mSocket.on("user left", onUserLeft);
 //        mSocket.on("typing", onTyping);
 //        mSocket.on("stop typing", onStopTyping);
 
@@ -182,6 +197,54 @@ public class ChatRoomActivity extends AppCompatActivity {
                     }
 
                     addMessage(username, message);
+                }
+            });
+        }
+    };
+
+    private Emitter.Listener onUserJoined = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(), "Join", Toast.LENGTH_SHORT).show();
+                    org.json.JSONObject data = (org.json.JSONObject) args[0];
+                    String username;
+                    int numUsers;
+                    try {
+                        username = data.getString("username");
+                        numUsers = data.getInt("numUsers");
+                    } catch (JSONException e) {
+                        return;
+                    }
+
+                    addLog(getResources().getString(R.string.message_user_joined, username));
+                    addParticipantsLog(numUsers);
+                }
+            });
+        }
+    };
+
+    private Emitter.Listener onUserLeft = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    org.json.JSONObject data = (org.json.JSONObject) args[0];
+                    String username;
+                    int numUsers;
+                    try {
+                        username = data.getString("username");
+                        numUsers = data.getInt("numUsers");
+                    } catch (JSONException e) {
+                        return;
+                    }
+
+                    addLog(getResources().getString(R.string.message_user_left, username));
+                    addParticipantsLog(numUsers);
+//                    removeTyping(username);
                 }
             });
         }
