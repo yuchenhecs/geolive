@@ -11,7 +11,7 @@ var mongoose = require('mongoose');
 
 mongoose.connect('mongodb://127.0.0.1:27017/project');
 
-var roomSchema = new mongoose.Schema({ id: 'string', name: 'string',num_users: 'string',tag: 'string' });
+var roomSchema = new mongoose.Schema({ id: 'string', name: 'string',num_users: 'number' });
 
 var db = mongoose.connection;
 
@@ -32,10 +32,37 @@ app.use(express.static(__dirname + '/public'));
 //var users = {};
 var rooms = {};
 
+
+
+rooms_data.find().stream()
+  .on('data', function(doc){
+    // handle doc
+    var room = new Room(doc.name, doc.id ,doc.num_users);
+        rooms[doc.id] = room;
+        console.log(doc.id);
+  })
+  .on('error', function(err){
+    // handle error
+  })
+  .on('end', function(){
+    // final callback
+  });
+
+//var room = new Room("name", socket.roomid , socket.username);
+
+
 var AutoComplete= new Trie();
 
 io.on('connection', function (socket) {
   var addedUser = false;
+
+  //console.log("asdasdasd");
+
+  socket.on('request topk',function(data){
+    socket.emit('topk result', {
+        keywords: AutoComplete.getTopk(data.toLowerCase())
+      });  
+  });
 
   socket.on('room search', function (data) {
     // we tell the client to execute 'new message'
@@ -45,17 +72,12 @@ io.on('connection', function (socket) {
     });
 
     AutoComplete.insertString(data.toLowerCase(),data);
-    
-    AutoComplete.proceedCursor(data.toLowerCase().charAt(0));
-    console.log(AutoComplete.getTopk());
-    AutoComplete.resetCursor();
-
-    var result = "x";
-    
 
     rooms_data.find({ name: new RegExp(data,'i') },'id',function (err, room_info) {
             // You get a model instance all setup and ready!
-      result = room_info.map(function(r) { return r.id; });
+      var result = room_info.map(function(r) { return r.id; });
+
+
 
       console.log(result);
 //      db.close();       
@@ -91,6 +113,7 @@ io.on('connection', function (socket) {
   socket.on('add user', function (data) {
     // we store the username in the socket session for this client
     // console.log(data);
+
     var parsedData = JSON.parse(data);
     // console.log(parsedData["username"], parsedData["roomid"]);
 
@@ -101,17 +124,27 @@ io.on('connection', function (socket) {
     addedUser = true;
     socket.join(socket.roomid);
 
+
     var numUsers=1;    
     if(rooms[socket.roomid] == null){
         //create a new room
-        var room = new Room("name", socket.roomid , socket.username);
+        var room = new Room("name", socket.roomid,0);
         room.addPerson(socket.username);  
         rooms[socket.roomid] = room;
+        var demoRoom = new rooms_data({ id:socket.roomid , name: "name", num_users: 1 });
+
+        demoRoom.save(function (err){
+            console.log('Inserted',socket.roomid);
+        });
     }else{
         //load data from existing room
         var room = rooms[socket.roomid];
         room.addPerson(socket.username);
         numUsers = room.getUserNumber();
+        rooms_data.findOne({ id:socket.roomid }, function (err, doc){
+          doc.num_users++;
+          doc.save();
+        });
     }
     
 
@@ -144,9 +177,9 @@ io.on('connection', function (socket) {
   // when the user disconnects.. perform this
   socket.on('disconnect', function () {
     // remove the username from global usernames list
+    console.log("disconnect");
+      
     if (addedUser) {
-      if(addedUser==true)
-        console.log("disconnect");
       var room = rooms[socket.roomid];
 
       var numUsers=0;    
@@ -154,6 +187,16 @@ io.on('connection', function (socket) {
         //console.log(room);
         room.removePerson(socket.username);
         numUsers = room.getUserNumber();
+
+
+        rooms_data.findOne({ id:socket.roomid }, function (err, doc){
+          doc.num_users--;
+          if(doc.num_users==0){
+            doc.remove();
+          }else{
+            doc.save();
+          }
+        });
       }
       
       // echo globally that this client has left
