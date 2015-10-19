@@ -1,9 +1,9 @@
-function Room(name, id, creator) {
+function Room(name, id,numUsers) {
   this.name = name;
   this.id = id;
-  this.creator = creator;
+ // this.creator = creator;
   this.people = [];
-  this.numUsers = 0;
+  this.numUsers = numUsers;
   this.peopleLimit = 4;
   this.status = "available";
   this.private = false;

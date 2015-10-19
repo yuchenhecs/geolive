@@ -81,6 +81,8 @@ Trie.prototype.insertString = function(str,value) {//key , value
   }
 };
 
+
+/*
 Trie.prototype.proceedCursor = function(token) {
   if(!this.cursor) return;
   if(this.cursor.direction[token]){
@@ -93,15 +95,30 @@ Trie.prototype.proceedCursor = function(token) {
 Trie.prototype.resetCursor = function() {
   this.cursor=this.root;
 }
+*/
+Trie.prototype.getEntries = function(str) {
+  var cursor=this.root;
+  
+  str.foreach(function(token){
+    if(!cursor) return null;
+    cursor=cursor.direction[token];
+  });
+  if(!cursor) return null;
 
-Trie.prototype.getEntries = function() {
-  if(!this.cursor) return null;
-  return this.cursor.entries;
+  return cursor.entries;
 }
 
-Trie.prototype.getTopk = function() {
-  if(!this.cursor) return null;
-  return this.cursor.topk;
+
+Trie.prototype.getTopk = function(str) {
+  var cursor=this.root;
+  
+  str.foreach(function(token){
+    if(!cursor) return null;
+    cursor=cursor.direction[token];
+  });
+  if(!cursor) return null;
+
+  return cursor.topk;
 }
 
 //TODO: delete node!!
