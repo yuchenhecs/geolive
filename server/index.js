@@ -62,7 +62,6 @@ io.on('connection', function (socket) {
     socket.emit('topk result', {
         keywords: AutoComplete.getTopk(data.toLowerCase())
       });  
-
   });
 
   socket.on('room search', function (data) {
@@ -192,7 +191,11 @@ io.on('connection', function (socket) {
 
         rooms_data.findOne({ id:socket.roomid }, function (err, doc){
           doc.num_users--;
-          doc.save();
+          if(doc.num_users==0){
+            doc.remove();
+          }else{
+            doc.save();
+          }
         });
       }
       
