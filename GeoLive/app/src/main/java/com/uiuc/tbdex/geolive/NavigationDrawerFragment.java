@@ -1,5 +1,6 @@
 package com.uiuc.tbdex.geolive;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.app.Activity;
 import android.support.v7.app.ActionBar;
@@ -248,7 +249,9 @@ public class NavigationDrawerFragment extends Fragment {
         }
 
         if (item.getItemId() == R.id.action_search) {
-            Toast.makeText(getActivity(), "Search action.", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getActivity(), "Search action.", Toast.LENGTH_SHORT).show();
+            Intent i = new Intent(getActivity(), SearchActivity.class);
+            startActivity(i);
             return true;
         }
 

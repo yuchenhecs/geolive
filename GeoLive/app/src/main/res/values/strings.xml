@@ -52,4 +52,5 @@
     <string name = "text">Enter</string>
     <string name = "search">Search</string>
     <string name = "no_records">There are no records</string>
+    <string name="title_activity_search">SearchActivity</string>
 </resources>
