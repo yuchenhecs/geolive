@@ -87,7 +87,7 @@ public class SearchActivity extends AppCompatActivity {
     }
 */
     private void doSearchRequested() {
-        Toast.makeText(this, mSearchBox.getText(), Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, mSearchBox.getText(), Toast.LENGTH_SHORT).show();
         mSocket.emit("room search", mSearchBox.getText());
 
 
