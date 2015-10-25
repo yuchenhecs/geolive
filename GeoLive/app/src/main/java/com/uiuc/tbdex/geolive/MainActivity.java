@@ -163,9 +163,9 @@ public class MainActivity extends AppCompatActivity
 
     private void initializeData() {
         mChatRooms = new ArrayList<>();
-        mChatRooms.add(new ChatRoom("Room 1"));
-        mChatRooms.add(new ChatRoom("Room 2"));
-        mChatRooms.add(new ChatRoom("Room 3"));
+        mChatRooms.add(new ChatRoom("room1"));
+        mChatRooms.add(new ChatRoom("room2"));
+        mChatRooms.add(new ChatRoom("New Room"));
     }
 
 
