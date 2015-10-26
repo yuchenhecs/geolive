@@ -9,7 +9,7 @@ function Trie() {
 
 
 Trie.prototype.insertString = function(str,value) {//key , value
-  
+
   var curr = this.root;
   var i=0;
   for(;i<str.length;i++){
@@ -39,8 +39,8 @@ Trie.prototype.insertString = function(str,value) {//key , value
     curr.entries[j].hit();// hit +1
     dest_entry=curr.entries[j];
   }
-  
-  // update topk  
+
+  // update topk
   // start from root again
   curr = this.root;
   console.log("33333333333");
@@ -57,7 +57,7 @@ Trie.prototype.insertString = function(str,value) {//key , value
     }
     console.log("22222222222");
     if(found==true) continue;
-    
+
     var k=3;
     if(topk_len<=k-1){
         curr.topk.push(dest_entry);  // new entry
@@ -86,9 +86,9 @@ Trie.prototype.insertString = function(str,value) {//key , value
 Trie.prototype.proceedCursor = function(token) {
   if(!this.cursor) return;
   if(this.cursor.direction[token]){
-    this.cursor=this.cursor.direction[token];  
+    this.cursor=this.cursor.direction[token];
   }else{
-    this.cursor=null; 
+    this.cursor=null;
   }
 }
 
@@ -98,11 +98,15 @@ Trie.prototype.resetCursor = function() {
 */
 Trie.prototype.getEntries = function(str) {
   var cursor=this.root;
-  
-  str.foreach(function(token){
-    if(!cursor) return null;
-    cursor=cursor.direction[token];
-  });
+
+  for (var i = 0, len = str.length; i < len; i++) {
+    if (!cursor) return null;
+    cursor = cursor.direction[str[i]];
+  }
+  // str.foreach(function(token){
+  //   if(!cursor) return null;
+  //   cursor=cursor.direction[token];
+  // });
   if(!cursor) return null;
 
   return cursor.entries;
@@ -111,11 +115,15 @@ Trie.prototype.getEntries = function(str) {
 
 Trie.prototype.getTopk = function(str) {
   var cursor=this.root;
-  
-  str.foreach(function(token){
-    if(!cursor) return null;
-    cursor=cursor.direction[token];
-  });
+
+  for (var i = 0, len = str.length; i < len; i++) {
+    if (!cursor) return null;
+    cursor = cursor.direction[str[i]];
+  }
+  // str.foreach(function(token){
+  //   if(!cursor) return null;
+  //   cursor=cursor.direction[token];
+  // });
   if(!cursor) return null;
 
   return cursor.topk;
