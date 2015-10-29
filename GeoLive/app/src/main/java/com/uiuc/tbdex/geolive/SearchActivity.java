@@ -35,6 +35,7 @@ public class SearchActivity extends AppCompatActivity {
     ListView lv;
 
 
+
     private Socket mSocket;
 
     {
