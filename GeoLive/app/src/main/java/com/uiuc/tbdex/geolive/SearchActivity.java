@@ -2,13 +2,18 @@ package com.uiuc.tbdex.geolive;
 
 import android.app.SearchManager;
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -17,6 +22,7 @@ import org.json.JSONObject;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.List;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
@@ -26,6 +32,7 @@ public class SearchActivity extends AppCompatActivity {
 
     Button mSearchButton;
     EditText mSearchBox;
+    ListView lv;
 
 
     private Socket mSocket;
@@ -59,6 +66,10 @@ public class SearchActivity extends AppCompatActivity {
 
         mSearchBox = (EditText) findViewById(R.id.text);
 
+        //super.onCreate(savedInstanceState);
+        //setContentView(R.layout.activity_search);
+        lv = (ListView) findViewById(android.R.id.list);
+
     }
 
     private Emitter.Listener onConnectError = new Emitter.Listener() {
@@ -90,6 +101,14 @@ public class SearchActivity extends AppCompatActivity {
         Toast.makeText(this, mSearchBox.getText(), Toast.LENGTH_SHORT).show();
         mSocket.emit("room search", mSearchBox.getText());
 
+/*
+        ArrayList<String> element_t = new ArrayList<String>();
+        element_t.add("roooom1");
+        element_t.add("roooom2");
+        element_t.add("roooom3");
+  */
+        //lv.setAdapter(mAdapter);
+        // setContentView(lv);
 
     }
 
@@ -114,8 +133,23 @@ public class SearchActivity extends AppCompatActivity {
                     for (String str: element){
                         //Log.d("onsearch", str);
                         Toast.makeText(getApplicationContext(), str,Toast.LENGTH_SHORT).show();
-
                     }
+
+                    ArrayAdapter<String> mAdapter = new ArrayAdapter<String>(getApplicationContext(),
+                            android.R.layout.simple_expandable_list_item_1, element) {
+                        @Override
+                        public View getView(int position, View convertView, ViewGroup parent) {
+
+                            View view = super.getView(position, convertView, parent);
+                            TextView text = (TextView) view.findViewById(android.R.id.text1);
+
+                            text.setTextColor(Color.BLACK);
+
+                            return view;
+                        }
+                    };
+                    lv.setAdapter(mAdapter);
+
 
 
                 }
