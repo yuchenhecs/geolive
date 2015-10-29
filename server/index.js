@@ -61,12 +61,12 @@ io.on('connection', function (socket) {
   socket.on('request topk',function(data){
     socket.emit('topk result', {
         keywords: AutoComplete.getTopk(data.toLowerCase())
-      });  
+      });
   });
 
   socket.on('room search', function (data) {
     // we tell the client to execute 'new message'
-    
+
     socket.emit('login', {
       numUsers: 1
     });
@@ -80,14 +80,14 @@ io.on('connection', function (socket) {
 
 
       console.log(result);
-//      db.close();       
+//      db.close();
       socket.emit('search result', {
         roomname: result
-      });  
+      });
     });
-    
 
-    
+
+
 
     // console.log(socket.id);
     console.log(data);
@@ -125,11 +125,11 @@ io.on('connection', function (socket) {
     socket.join(socket.roomid);
 
 
-    var numUsers=1;    
+    var numUsers=1;
     if(rooms[socket.roomid] == null){
         //create a new room
         var room = new Room("name", socket.roomid,0);
-        room.addPerson(socket.username);  
+        room.addPerson(socket.username);
         rooms[socket.roomid] = room;
         var demoRoom = new rooms_data({ id:socket.roomid , name: "name", num_users: 1 });
 
@@ -146,7 +146,7 @@ io.on('connection', function (socket) {
           doc.save();
         });
     }
-    
+
 
     // console.log(io.sockets.adapter.rooms[socket.roomid]);
     socket.emit('login', {
@@ -178,11 +178,11 @@ io.on('connection', function (socket) {
   socket.on('disconnect', function () {
     // remove the username from global usernames list
     console.log("disconnect");
-      
+
     if (addedUser) {
       var room = rooms[socket.roomid];
 
-      var numUsers=0;    
+      var numUsers=0;
       if(room){
         //console.log(room);
         room.removePerson(socket.username);
@@ -193,12 +193,14 @@ io.on('connection', function (socket) {
           doc.num_users--;
           if(doc.num_users==0){
             doc.remove();
+            //
+            delete rooms[socket.roomid];
           }else{
             doc.save();
           }
         });
       }
-      
+
       // echo globally that this client has left
       socket.broadcast.to(socket.roomid).emit('user left', {
         username: socket.username,

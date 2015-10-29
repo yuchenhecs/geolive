@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -35,7 +37,6 @@ public class SearchActivity extends AppCompatActivity {
     ListView lv;
 
 
-
     private Socket mSocket;
 
     {
@@ -54,6 +55,7 @@ public class SearchActivity extends AppCompatActivity {
         mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
         mSocket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
         mSocket.on("search result", onSearchResult);
+        mSocket.on("topk result", onTopkResult);
         mSocket.connect();
 
 
@@ -64,13 +66,29 @@ public class SearchActivity extends AppCompatActivity {
                 doSearchRequested();
             }
         });
-
+        lv = (ListView) findViewById(android.R.id.list);
         mSearchBox = (EditText) findViewById(R.id.text);
+        mSearchBox.addTextChangedListener(new TextWatcher() {
 
         //super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_search);
-        lv = (ListView) findViewById(android.R.id.list);
 
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                mSocket.emit("request topk", mSearchBox.getText());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
     }
 
     private Emitter.Listener onConnectError = new Emitter.Listener() {
@@ -85,6 +103,8 @@ public class SearchActivity extends AppCompatActivity {
             });
         }
     };
+
+
 /*
     private void handleIntent(Intent intent){
         if(Intent.ACTION_SEARCH.equals(intent.getAction())){
@@ -99,7 +119,7 @@ public class SearchActivity extends AppCompatActivity {
     }
 */
     private void doSearchRequested() {
-        Toast.makeText(this, mSearchBox.getText(), Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, mSearchBox.getText(), Toast.LENGTH_SHORT).show();
         mSocket.emit("room search", mSearchBox.getText());
 
 /*
@@ -158,7 +178,36 @@ public class SearchActivity extends AppCompatActivity {
         }
     };
 
-    @Override
+
+    private Emitter.Listener onTopkResult = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    JSONObject data = (JSONObject) args[0];
+                    JSONArray array;
+                    ArrayList<String> element=new ArrayList<String>();
+                    try {
+                        array = data.getJSONArray("keywords");
+
+                        for (int i=0;i<array.length();i++){
+                            element.add(array.getString(i));
+                        }
+                    } catch (JSONException e) {
+                        return;
+                    }
+                    for (String str: element){
+                        //Log.d("onsearch", str);
+                        Toast.makeText(getApplicationContext(), str,Toast.LENGTH_SHORT).show();
+
+                    }
+                }
+            });
+        }
+    };
+
+
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_search, menu);
