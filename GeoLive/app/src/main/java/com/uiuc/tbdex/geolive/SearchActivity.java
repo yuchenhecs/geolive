@@ -36,7 +36,6 @@ public class SearchActivity extends AppCompatActivity {
     EditText mSearchBox;
     ListView lv;
 
-
     private Socket mSocket;
 
     {
@@ -58,7 +57,6 @@ public class SearchActivity extends AppCompatActivity {
         mSocket.on("topk result", onTopkResult);
         mSocket.connect();
 
-
         mSearchButton = (Button) findViewById(R.id.add);
         mSearchButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -69,11 +67,6 @@ public class SearchActivity extends AppCompatActivity {
         lv = (ListView) findViewById(android.R.id.list);
         mSearchBox = (EditText) findViewById(R.id.text);
         mSearchBox.addTextChangedListener(new TextWatcher() {
-
-        //super.onCreate(savedInstanceState);
-        //setContentView(R.layout.activity_search);
-
-
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -151,9 +144,9 @@ public class SearchActivity extends AppCompatActivity {
                     } catch (JSONException e) {
                         return;
                     }
-                    for (String str: element){
+                    for (String str: element) {
                         //Log.d("onsearch", str);
-                        Toast.makeText(getApplicationContext(), str,Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(getApplicationContext(), str,Toast.LENGTH_SHORT).show();
                     }
 
                     ArrayAdapter<String> mAdapter = new ArrayAdapter<String>(getApplicationContext(),
@@ -170,8 +163,6 @@ public class SearchActivity extends AppCompatActivity {
                         }
                     };
                     lv.setAdapter(mAdapter);
-
-
 
                 }
             });
@@ -197,11 +188,20 @@ public class SearchActivity extends AppCompatActivity {
                     } catch (JSONException e) {
                         return;
                     }
-                    for (String str: element){
-                        //Log.d("onsearch", str);
-                        Toast.makeText(getApplicationContext(), str,Toast.LENGTH_SHORT).show();
+                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(),
+                            android.R.layout.simple_expandable_list_item_1, element) {
+                        @Override
+                        public View getView(int position, View convertView, ViewGroup parent) {
 
-                    }
+                            View view = super.getView(position, convertView, parent);
+                            TextView text = (TextView) view.findViewById(android.R.id.text1);
+
+                            text.setTextColor(Color.BLACK);
+
+                            return view;
+                        }
+                    };
+                    lv.setAdapter(adapter);
                 }
             });
         }
