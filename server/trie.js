@@ -1,6 +1,8 @@
 var Trie_node = require('./trie_node.js');
 var Search_entry = require('./search_entry.js');
 
+var MAX_K=3;
+
 function Trie() {
     this.root=new Trie_node();
 
@@ -9,7 +11,6 @@ function Trie() {
 
 
 Trie.prototype.insertString = function(str,value) {//key , value
-
   var curr = this.root;
   var i=0;
   for(;i<str.length;i++){
@@ -43,10 +44,17 @@ Trie.prototype.insertString = function(str,value) {//key , value
   // update topk
   // start from root again
   curr = this.root;
-  console.log("33333333333");
+  //console.log("33333333333");
   i=0;
   for(;i<str.length;i++){
-    var topk_len=curr.topk.length;
+    Trie.prototype.updateTopk(curr,dest_entry,value);
+    curr=curr.direction[str.charAt(i)];
+  }
+  Trie.prototype.updateTopk(curr,dest_entry,value)
+};
+
+Trie.prototype.updateTopk = function(curr,dest_entry,value) {
+  var topk_len=curr.topk.length;
     var found=false;
     var j=0
     for(;j<topk_len;j++){
@@ -55,13 +63,13 @@ Trie.prototype.insertString = function(str,value) {//key , value
         break;
       }
     }
-    console.log("22222222222");
-    if(found==true) continue;
+    //console.log("22222222222");
+    if(found==true) return;
 
-    var k=3;
+    var k=MAX_K;
     if(topk_len<=k-1){
         curr.topk.push(dest_entry);  // new entry
-        console.log("111111111111");
+        //console.log("111111111111");
     }else{
       var tmp_min=curr.topk[0].hits;
       var tmp_index=0;
@@ -77,10 +85,8 @@ Trie.prototype.insertString = function(str,value) {//key , value
         curr.topk.push(dest_entry);
       }
     }
-    curr=curr.direction[str.charAt(i)];
-  }
-};
-
+    return;
+}
 
 /*
 Trie.prototype.proceedCursor = function(token) {

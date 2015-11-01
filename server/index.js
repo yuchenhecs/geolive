@@ -54,10 +54,11 @@ rooms_data.find().stream()
 var AutoComplete= new Trie();
 
 io.on('connection', function (socket) {
+
+  
   var addedUser = false;
 
   //console.log("asdasdasd");
-
   socket.on('request topk',function(data){
     socket.emit('topk result', {
         keywords: AutoComplete.getTopk(data.toLowerCase())
@@ -66,7 +67,6 @@ io.on('connection', function (socket) {
 
   socket.on('room search', function (data) {
     // we tell the client to execute 'new message'
-
     socket.emit('login', {
       numUsers: 1
     });
