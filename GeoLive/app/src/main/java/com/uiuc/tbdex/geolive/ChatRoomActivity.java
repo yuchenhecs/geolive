@@ -92,9 +92,10 @@ public class ChatRoomActivity extends AppCompatActivity {
         attemptLogin();
     }
 
+
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onStop() {
+        super.onStop();
 
        // mSocket.disconnect();
         String data=null;
@@ -104,6 +105,14 @@ public class ChatRoomActivity extends AppCompatActivity {
         mSocket.off("new message", onNewMessage);
         mSocket.off("user joined", onUserJoined);
         mSocket.off("user left", onUserLeft);
+    }
+
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        //mSocket.disconnect();
     }
 
     private void attemptLogin() {

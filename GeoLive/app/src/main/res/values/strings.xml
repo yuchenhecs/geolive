@@ -1,6 +1,11 @@
 <resources>
     <string name="app_name">GeoLive</string>
-    
+
+    <!--Strings related to search-->
+    <string name="search_title">Search</string>
+    <string name="search_hint">Search room names</string>
+
+
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password (optional)</string>
@@ -53,4 +58,5 @@
     <string name = "search">Search</string>
     <string name = "no_records">There are no records</string>
     <string name="title_activity_search">SearchActivity</string>
+    <string name="title_activity_danmu">DanmuActivity</string>
 </resources>
