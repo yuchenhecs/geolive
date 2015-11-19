@@ -92,16 +92,24 @@ public class ChatRoomActivity extends AppCompatActivity {
         attemptLogin();
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
 
-        mSocket.disconnect();
+    @Override
+    public void onStop() {
+        super.onStop();
+
         mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
         mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
         mSocket.off("new message", onNewMessage);
         mSocket.off("user joined", onUserJoined);
         mSocket.off("user left", onUserLeft);
+    }
+
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        mSocket.disconnect();
     }
 
     private void attemptLogin() {

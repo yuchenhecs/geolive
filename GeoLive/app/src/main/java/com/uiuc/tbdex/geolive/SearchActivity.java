@@ -1,20 +1,24 @@
 package com.uiuc.tbdex.geolive;
 
 import android.app.SearchManager;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.graphics.Color;
+import android.os.Debug;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
+import android.widget.CursorAdapter;
 import android.widget.ListView;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,11 +36,13 @@ import io.socket.emitter.Emitter;
 
 public class SearchActivity extends AppCompatActivity {
 
-    Button mSearchButton;
-    EditText mSearchBox;
-    ListView lv;
+    private ArrayList<String> mTopKResult = new ArrayList<>();
 
     private Socket mSocket;
+    private SearchManager mSearchManager;
+    private SearchView mSearchView;
+
+    private ListView mListView;
 
     {
         try {
@@ -47,9 +53,10 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
+        mListView = (ListView) findViewById(android.R.id.list);
 
         mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
         mSocket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
@@ -57,162 +64,43 @@ public class SearchActivity extends AppCompatActivity {
         mSocket.on("topk result", onTopkResult);
         mSocket.connect();
 
-        mSearchButton = (Button) findViewById(R.id.add);
-        mSearchButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                doSearchRequested();
-            }
-        });
-        lv = (ListView) findViewById(android.R.id.list);
-        mSearchBox = (EditText) findViewById(R.id.text);
-        mSearchBox.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                mSocket.emit("request topk", mSearchBox.getText());
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        });
+        handleIntent(getIntent());
     }
 
-    private Emitter.Listener onConnectError = new Emitter.Listener() {
-        @Override
-        public void call(Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getApplicationContext(),
-                            R.string.error_connect, Toast.LENGTH_LONG).show();
-                }
-            });
-        }
-    };
 
-
-/*
-    private void handleIntent(Intent intent){
-        if(Intent.ACTION_SEARCH.equals(intent.getAction())){
-            String query = intent.getStringExtra(SearchManager.QUERY);
-            doMySearch(query);
-        }
+    @Override
+    protected void onNewIntent(Intent intent) {
+        handleIntent(intent);
     }
 
-    private void doMySearch(String query){
-        Toast.makeText(this, "search on "+ query, Toast.LENGTH_SHORT).show();
 
-    }
-*/
-    private void doSearchRequested() {
-        //Toast.makeText(this, mSearchBox.getText(), Toast.LENGTH_SHORT).show();
-        mSocket.emit("room search", mSearchBox.getText());
-
-/*
-        ArrayList<String> element_t = new ArrayList<String>();
-        element_t.add("roooom1");
-        element_t.add("roooom2");
-        element_t.add("roooom3");
-  */
-        //lv.setAdapter(mAdapter);
-        // setContentView(lv);
-
-    }
-
-    private Emitter.Listener onSearchResult = new Emitter.Listener() {
-        @Override
-        public void call(final Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    JSONObject data = (JSONObject) args[0];
-                    JSONArray array;
-                    ArrayList<String> element=new ArrayList<String>();
-                    try {
-                        array = data.getJSONArray("roomname");
-
-                        for (int i=0;i<array.length();i++){
-                            element.add(array.getString(i));
-                        }
-                    } catch (JSONException e) {
-                        return;
-                    }
-                    for (String str: element) {
-                        //Log.d("onsearch", str);
-//                        Toast.makeText(getApplicationContext(), str,Toast.LENGTH_SHORT).show();
-                    }
-
-                    ArrayAdapter<String> mAdapter = new ArrayAdapter<String>(getApplicationContext(),
-                            android.R.layout.simple_expandable_list_item_1, element) {
-                        @Override
-                        public View getView(int position, View convertView, ViewGroup parent) {
-
-                            View view = super.getView(position, convertView, parent);
-                            TextView text = (TextView) view.findViewById(android.R.id.text1);
-
-                            text.setTextColor(Color.BLACK);
-
-                            return view;
-                        }
-                    };
-                    lv.setAdapter(mAdapter);
-
-                }
-            });
-        }
-    };
-
-
-    private Emitter.Listener onTopkResult = new Emitter.Listener() {
-        @Override
-        public void call(final Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    JSONObject data = (JSONObject) args[0];
-                    JSONArray array;
-                    ArrayList<String> element=new ArrayList<String>();
-                    try {
-                        array = data.getJSONArray("keywords");
-
-                        for (int i=0;i<array.length();i++){
-                            element.add(array.getString(i));
-                        }
-                    } catch (JSONException e) {
-                        return;
-                    }
-                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(),
-                            android.R.layout.simple_expandable_list_item_1, element) {
-                        @Override
-                        public View getView(int position, View convertView, ViewGroup parent) {
-
-                            View view = super.getView(position, convertView, parent);
-                            TextView text = (TextView) view.findViewById(android.R.id.text1);
-
-                            text.setTextColor(Color.BLACK);
-
-                            return view;
-                        }
-                    };
-                    lv.setAdapter(adapter);
-                }
-            });
-        }
-    };
-
-
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_search, menu);
+
+        mSearchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        mSearchView = (SearchView) menu.findItem(R.id.search).getActionView();
+        mSearchView.setSearchableInfo(mSearchManager.getSearchableInfo(getComponentName()));
+        mSearchView.setIconifiedByDefault(false);
+
+        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                mSocket.emit("request topk", newText);
+
+                return true;
+            }
+        });
+
         return true;
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -228,4 +116,138 @@ public class SearchActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+
+    private void handleIntent(Intent intent) {
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            String query = intent.getStringExtra(SearchManager.QUERY);
+
+            mSocket.emit("room search", query);
+        }
+    }
+
+
+    private Emitter.Listener onConnectError = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(),
+                            R.string.error_connect, Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+    };
+
+
+    private Emitter.Listener onSearchResult = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    JSONObject data = (JSONObject) args[0];
+                    JSONArray array;
+                    ArrayList<String> element = new ArrayList<String>();
+                    try {
+                        array = data.getJSONArray("roomname");
+
+                        for (int i = 0; i < array.length(); i++) {
+                            element.add(array.getString(i));
+                        }
+                    } catch (JSONException e) {
+                        return;
+                    }
+
+                    ArrayAdapter<String> mAdapter = new ArrayAdapter<String>(getApplicationContext(),
+                            android.R.layout.simple_expandable_list_item_1, element) {
+                        @Override
+                        public View getView(int position, View convertView, ViewGroup parent) {
+
+                            View view = super.getView(position, convertView, parent);
+                            TextView text = (TextView) view.findViewById(android.R.id.text1);
+
+                            text.setTextColor(Color.BLACK);
+
+                            return view;
+                        }
+                    };
+
+                    mListView.setAdapter(mAdapter);
+                }
+            });
+        }
+    };
+
+
+    private Emitter.Listener onTopkResult = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mTopKResult.clear();
+                    Log.d("SearchActivity", "changing suggestion");
+
+                    JSONObject data = (JSONObject) args[0];
+                    JSONArray array;
+
+                    try {
+                        array = data.getJSONArray("keywords");
+
+                        for (int i = 0; i < array.length(); i++) {
+                            mTopKResult.add(array.getString(i));
+                        }
+                    } catch (JSONException e) {
+                        return;
+                    }
+
+                    String[] columns = new String[]{"_id", "text"};
+                    Object[] temp = new Object[]{0, "default"};
+
+                    MatrixCursor cursor = new MatrixCursor(columns);
+
+                    for (int i = 0; i < mTopKResult.size(); i++) {
+                        temp[0] = i;
+                        temp[1] = mTopKResult.get(i);
+
+                        cursor.addRow(temp);
+                    }
+
+                    mSearchView.setSuggestionsAdapter(new SearchSuggestionAdapter(getApplicationContext(), cursor, mTopKResult));
+                }
+            });
+        }
+    };
+
+
+    public class SearchSuggestionAdapter extends CursorAdapter {
+
+        private List<String> items;
+        private TextView textView;
+
+        public SearchSuggestionAdapter(Context context, Cursor cursor, List<String> items) {
+            super(context, cursor, false);
+            this.items = items;
+        }
+
+        @Override
+        public View newView(Context context, Cursor cursor, ViewGroup parent) {
+            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View view = inflater.inflate(R.layout.item_search_suggestion, parent, false);
+            textView = (TextView) view.findViewById(R.id.search_suggestion);
+
+            return view;
+        }
+
+        @Override
+        public void bindView(View view, Context context, Cursor cursor) {
+            // FIXME: Check bug (size == 0)
+            if (items.size() > 0) {
+                textView.setText(items.get(cursor.getPosition()));
+            }
+        }
+    }
+
 }

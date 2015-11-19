@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
+import android.widget.Button;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,8 @@ public class MainActivity extends AppCompatActivity
     private List<ChatRoom> mChatRooms;
 
     private String mUsername;
+
+    private Button mButton; // Danmu Test Only
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
@@ -59,6 +62,14 @@ public class MainActivity extends AppCompatActivity
         initializeData();
         initializeAdapter();
 
+        mButton = (Button) findViewById(R.id.button);
+        mButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), DanmuActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
