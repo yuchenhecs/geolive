@@ -1,0 +1,37 @@
+{
+    "Name" : "UIGames",
+    "Location" : "34,57",
+    "users" : [ 
+        {
+            "UserID" : "006",
+            "Name" : "Kelly"
+        }, 
+        {
+            "UserID" : "007",
+            "Name" : "Anny"
+        }, 
+        {
+            "UserID" : "008",
+            "Name" : "Simon"
+        },
+        {
+            "UserID" : "009",
+            "Name" : "Bruse"
+        }
+    ]
+}
+
+{
+    "Name" : "TVShows",
+    "Location" : "92,61",
+    "users" : [ 
+        {
+            "UserID" : "010",
+            "Name" : "Missy"
+        }, 
+        {
+            "UserID" : "011",
+            "Name" : "Calvin"
+        }
+    ]
+}

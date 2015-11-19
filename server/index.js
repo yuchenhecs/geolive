@@ -11,7 +11,7 @@ var mongoose = require('mongoose');
 
 mongoose.connect('mongodb://127.0.0.1:27017/project');
 
-var roomSchema = new mongoose.Schema({ id: 'string', name: 'string',num_users: 'number' });
+var roomSchema = new mongoose.Schema({ id: 'string', name: 'string',num_users: 'number', location:{type:[Number], index:'2dsphere'} });
 
 var db = mongoose.connection;
 
@@ -54,10 +54,11 @@ rooms_data.find().stream()
 var AutoComplete= new Trie();
 
 io.on('connection', function (socket) {
+
+  
   var addedUser = false;
 
   //console.log("asdasdasd");
-
   socket.on('request topk',function(data){
     socket.emit('topk result', {
         keywords: AutoComplete.getTopk(data.toLowerCase())
@@ -66,30 +67,61 @@ io.on('connection', function (socket) {
 
   socket.on('room search', function (data) {
     // we tell the client to execute 'new message'
-
     socket.emit('login', {
       numUsers: 1
     });
 
     AutoComplete.insertString(data.toLowerCase(),data);
 
-    rooms_data.find({ name: new RegExp(data,'i') },'id',function (err, room_info) {
-            // You get a model instance all setup and ready!
-      var result = room_info.map(function(r) { return r.id; });
 
 
-
-      console.log(result);
-//      db.close();
-      socket.emit('search result', {
-        roomname: result
-      });
+    room_data.find({name: 'name'}).sort({num_users: -1}).limit(10).exec( 
+    function(err, room_info) {
+        //???
+        if(err){
+        	console.log(err);
+        }else{
+	        var result = room_info.map(function(r){return r.id;});
+	        console.log(result);
+	        socket.emit('popular results', {roomname: result});
+	    }
     });
 
 
 
+    room_data.find({ location: { '$near': { 
+        '$geometry': { type: 'Point', coordinates: [ 10, -20 ] } } } 
+    }).limit(10).exec(
+    function(err, room_info){
+    	if(err){
+    		console.log(err);
+    	}else{
+    		var result = room_info.map(function(r){return r.id});
+    		console.log(result);
+    		socke.emit('nearby results',{roomname: result})
+    	}
+    }); 
 
-    // console.log(socket.id);
+
+
+
+//     rooms_data.find({ name: new RegExp(data,'i') },'id',function (err, room_info) {
+//             // You get a model instance all setup and ready!
+//       var result = room_info.map(function(r) { return r.id; });
+
+
+
+//       console.log(result);
+// //      db.close();
+//       socket.emit('search result', {
+//         roomname: result
+//       });
+//     });
+
+
+
+
+    console.log(socket.id);
     console.log(data);
   });
 
