@@ -92,16 +92,27 @@ public class ChatRoomActivity extends AppCompatActivity {
         attemptLogin();
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
 
-        mSocket.disconnect();
+    @Override
+    public void onStop() {
+        super.onStop();
+
+       // mSocket.disconnect();
+        String data=null;
+        mSocket.emit("leave room",data);
         mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
         mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
         mSocket.off("new message", onNewMessage);
         mSocket.off("user joined", onUserJoined);
         mSocket.off("user left", onUserLeft);
+    }
+
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        //mSocket.disconnect();
     }
 
     private void attemptLogin() {
@@ -132,8 +143,11 @@ public class ChatRoomActivity extends AppCompatActivity {
 
 
     private void attemptSend() {
+
+        Toast.makeText(getApplicationContext(), mUsername, Toast.LENGTH_SHORT).show();
+
         if (mUsername == null) return;
-        if (!mSocket.connected()) return;
+        //if (!mSocket.connected()) return;
 
         String message = mInputMessageView.getText().toString().trim();
         if (TextUtils.isEmpty(message)) {

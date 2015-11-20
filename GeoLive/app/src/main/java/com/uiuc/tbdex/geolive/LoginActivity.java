@@ -3,6 +3,7 @@ package com.uiuc.tbdex.geolive;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.app.LoaderManager.LoaderCallbacks;
@@ -17,6 +18,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -26,7 +28,17 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
+
+import io.socket.emitter.Emitter;
+import io.socket.client.IO;
+import io.socket.client.Socket;
+
+import org.json.JSONException;
+import org.json.simple.JSONObject;
+
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +53,16 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * A dummy authentication store containing known user names and passwords.
      * TODO: remove after connecting to a real authentication system.
      */
+
+    private Socket mSocket;
+    {
+        try {
+            mSocket = IO.socket(Constants.CHAT_SERVER_URL);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
     private static final String[] DUMMY_CREDENTIALS = new String[]{
             "foo@example.com:hello", "bar@example.com:world"
     };
@@ -87,7 +109,79 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+
+
+        mSocket.on("login", onLogin);
+        //mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
+        //mSocket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
+        mSocket.connect();
+
+        //Constants.Connect_Counter++;
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+
+        //if(--Constants.Connect_Counter==0){
+        //    mSocket.disconnect();
+        //};
+        //mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
+        //mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
+        mSocket.off("login", onLogin);
+    }
+
+
+    private Emitter.Listener onConnectError = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(),
+                            R.string.error_connect, Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+    };
+
+
+    private Emitter.Listener onLogin = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            org.json.JSONObject data = (org.json.JSONObject) args[0];
+
+            int flag;
+            try {
+                flag = data.getInt("flag");
+            } catch (JSONException e) {
+                return;
+            }
+
+            if(flag==0){
+
+                //mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
+                //mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
+                //mSocket.off("login", onLogin);
+                startMainActivity();
+            }else{
+                LoginActivity.this.runOnUiThread(new Runnable() {
+                    public void run() {
+                        Toast.makeText(getApplicationContext(), "Error! username conflict!", Toast.LENGTH_SHORT).show();
+                        showProgress(false);
+                    }
+                });
+
+            }
+            //finish();
+        }
+
+
+    };
+
+
+
 
     private void populateAutoComplete() {
         getLoaderManager().initLoader(0, null, this);
@@ -111,6 +205,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         // Store values at the time of the login attempt.
         String email = mEmailView.getText().toString();
         String password = mPasswordView.getText().toString();
+
+        mUsername = email;
+
 
         boolean cancel = false;
         View focusView = null;
@@ -141,10 +238,19 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(email, password);
-            mAuthTask.execute((Void) null);
+            //mAuthTask = new UserLoginTask(email, password);
+            //mAuthTask.execute((Void) null);
+
+            mSocket.emit("login", email);
         }
     }
+
+
+
+
+
+
+
 
     private boolean isEmailValid(String email) {
         //TODO: Replace this with your own logic
@@ -270,6 +376,10 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         @Override
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
+            //Toast.makeText(getApplicationContext(), "wwwwww", Toast.LENGTH_SHORT).show();
+
+             // String password = (String) objects[1];
+
 
 //            try {
 //                // Simulate network access.

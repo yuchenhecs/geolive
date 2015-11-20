@@ -34,6 +34,7 @@ public class LocRecoRecyclerViewAdapter extends RecyclerView.Adapter<LocRecoRecy
                     Toast.makeText(v.getContext(), currentRoom.getTitle(), Toast.LENGTH_SHORT).show();
 
                     Intent intent = new Intent(mContext, ChatRoomActivity.class);
+
                     intent.putExtra("username", mUsername);
                     intent.putExtra("roomtitle", currentRoom.getTitle());
                     // start new activity outside of activity

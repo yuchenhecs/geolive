@@ -15,9 +15,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
+import android.widget.Button;
 
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+
+import io.socket.client.IO;
+import io.socket.client.Socket;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
@@ -31,6 +36,19 @@ public class MainActivity extends AppCompatActivity
     private List<ChatRoom> mChatRooms;
 
     private String mUsername;
+
+
+    private Socket mSocket;
+    {
+        try {
+            mSocket = IO.socket(Constants.CHAT_SERVER_URL);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    private Button mButton; // Danmu Test Only
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
@@ -59,6 +77,15 @@ public class MainActivity extends AppCompatActivity
         initializeData();
         initializeAdapter();
 
+        mSocket.connect();
+        mButton = (Button) findViewById(R.id.button);
+        mButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), DanmuActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
