@@ -9,13 +9,20 @@ var Trie = require('./trie.js');
 
 var mongoose = require('mongoose');
 
-mongoose.connect('mongodb://127.0.0.1:27017/project');
+mongoose.connect('mongodb://127.0.0.1:27017/geoLive');
 
-var roomSchema = new mongoose.Schema({ id: 'string', name: 'string',num_users: 'number', location:{type:[Number], index:'2dsphere'} });
+var roomSchema = new mongoose.Schema({ 
+	id: 'string', 
+	name: 'string',
+	num_users: 'number', 
+	location:{type:[Number], index:'2dsphere'} 
+});
 
 var db = mongoose.connection;
 
-var rooms_data = mongoose.model('rooms', roomSchema);
+var rooms_data = mongoose.model('room', roomSchema);
+
+//module.exports = rooms_data;
 
 
 server.listen(port, function () {
@@ -34,12 +41,29 @@ var rooms = {};
 
 
 
+
+// var test_room = new rooms_data({
+// 	id: "030",
+// 	name: 'Tim',
+// 	num_users: 7,
+// 	location:[5,20]
+// })
+
+// test_room.save(function(err) {
+//   if (err) throw err;
+
+//   console.log('room saved successfully!');
+// });
+
+
+
+
 rooms_data.find().stream()
   .on('data', function(doc){
     // handle doc
-    var room = new Room(doc.name, doc.id ,doc.num_users);
+    var room = new Room(doc.name, doc.id ,doc.num_users, doc.location);
         rooms[doc.id] = room;
-        console.log(doc.id);
+        //console.log(doc.id);
   })
   .on('error', function(err){
     // handle error
@@ -48,10 +72,40 @@ rooms_data.find().stream()
     // final callback
   });
 
+
 //var room = new Room("name", socket.roomid , socket.username);
 
 
 var AutoComplete= new Trie();
+
+
+rooms_data.find({}).sort({num_users: -1}).limit(10).exec( 
+    function(err, room_info) {
+        //???
+        if(err){
+        	console.log(err);
+        }else{
+	        var result = room_info.map(function(r){return r.id;});
+	        console.log("popular:")
+	        console.log(result);
+	        //socket.emit('popular results', {roomname: result});
+	    }
+    });
+
+
+
+rooms_data.find({location: {'$near':{'$geometry':{ type: 'Point', coordinates:[-9,63s]}}}}).limit(10).exec(
+//rooms_data.find({location: {'$near':{[52,65]}}).exec(
+    function(err, room_info){
+    	if(err){
+    		console.log(err);
+    	}else{
+    		var result = room_info.map(function(r){return r.id;});
+    		console.log("geo:")
+    		console.log(result);
+    		//socke.emit('nearby results',{roomname: result})
+    	}
+}); 
 
 io.on('connection', function (socket) {
 
@@ -75,48 +129,22 @@ io.on('connection', function (socket) {
 
 
 
-    room_data.find({name: 'name'}).sort({num_users: -1}).limit(10).exec( 
-    function(err, room_info) {
-        //???
-        if(err){
-        	console.log(err);
-        }else{
-	        var result = room_info.map(function(r){return r.id;});
-	        console.log(result);
-	        socket.emit('popular results', {roomname: result});
-	    }
+
+
+
+
+    rooms_data.find({ name: new RegExp(data,'i') },'id',function (err, room_info) {
+            // You get a model instance all setup and ready!
+      var result = room_info.map(function(r) { return r.id; });
+
+
+
+      console.log(result);
+//      db.close();
+      socket.emit('search result', {
+        roomname: result
+      });
     });
-
-
-
-    room_data.find({ location: { '$near': { 
-        '$geometry': { type: 'Point', coordinates: [ 10, -20 ] } } } 
-    }).limit(10).exec(
-    function(err, room_info){
-    	if(err){
-    		console.log(err);
-    	}else{
-    		var result = room_info.map(function(r){return r.id});
-    		console.log(result);
-    		socke.emit('nearby results',{roomname: result})
-    	}
-    }); 
-
-
-
-
-//     rooms_data.find({ name: new RegExp(data,'i') },'id',function (err, room_info) {
-//             // You get a model instance all setup and ready!
-//       var result = room_info.map(function(r) { return r.id; });
-
-
-
-//       console.log(result);
-// //      db.close();
-//       socket.emit('search result', {
-//         roomname: result
-//       });
-//     });
 
 
 
