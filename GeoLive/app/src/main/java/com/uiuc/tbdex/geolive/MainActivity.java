@@ -18,8 +18,6 @@ import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 
 import android.support.v4.widget.DrawerLayout;
-//import android.app.Fragment;
-//import android.app.FragmentManager;
 
 
 import android.widget.Button;
@@ -34,7 +32,6 @@ import java.util.ArrayList;
 import java.util.List;
 import io.socket.client.IO;
 import io.socket.client.Socket;
-
 
 
 
@@ -95,7 +92,6 @@ public class MainActivity extends AppCompatActivity
         mTitle = getTitle();
 
         // Set up the drawer.
-
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
@@ -108,6 +104,16 @@ public class MainActivity extends AppCompatActivity
         initializeData();
         initializeAdapter();
 
+        mSocket.connect();
+        mButton = (Button) findViewById(R.id.button);
+        mButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), DanmuActivity.class);
+                startActivity(intent);
+            }
+        });
+    
        // mButton = (Button)findViewById(R.id.pink_icon);
         findViewById(R.id.pink_icon).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -149,74 +155,15 @@ public class MainActivity extends AppCompatActivity
 */
 
     }
-/*
+
     @Override
-    public void onClick(View v){
-        switch(v.getId()){
-            case R.id.popular_layout:
-                setTabSelection(0);
-                break;
-
-            case R.id.location_layout:
-                setTabSelection(1);
-                break;
-            default:
-                break;
-
-        }
+    public void onNavigationDrawerItemSelected(int position) {
+        // update the main content by replacing fragments
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction()
+                .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
+                .commit();
     }
-
-    private void setTabSelection(int index){
-        clearSelection();
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-        hideFragments(transaction);
-        switch(index){
-            case 0:
-                PopularLayout.setBackgroundColor(0xff0000ff);
-                if(mPopular == null){
-                    mPopular = new Popular();
-                    transaction.add(R.id.content, mPopular);
-                }
-                else{
-                    transaction.show(mPopular);
-                }
-                break;
-
-            case 1:
-                PopularLayout.setBackgroundColor(0xff0000ff);
-                if(mLocation == null){
-                    mLocation = new Location();
-                    transaction.add(R.id.content, mLocation);
-                }
-                else{
-                    transaction.show(mLocation);
-                }
-                break;
-        }
-    }
-
-    private void hideFragments(FragmentTransaction transaction) {
-        if (mPopular != null) {
-            transaction.hide(mPopular);
-        }
-        if (mLocation != null) {
-            transaction.hide(mLocation);
-        }
-    }
-    private void clearSelection(){
-        PopularLayout.setBackgroundColor(0xffffffff);
-        LocationLayout.setBackgroundColor(0xffffffff);
-    }
-
-*/
-@Override
-public void onNavigationDrawerItemSelected(int position) {
-    // update the main content by replacing fragments
-    FragmentManager fragmentManager = getSupportFragmentManager();
-    fragmentManager.beginTransaction()
-            .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
-            .commit();
-}
 
     public void onSectionAttached(int number) {
         switch (number) {
