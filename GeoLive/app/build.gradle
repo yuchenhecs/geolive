@@ -32,4 +32,7 @@ dependencies {
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'junit'
     }
+    compile 'com.getbase:floatingactionbutton:1.10.1'
+
+    compile 'com.google.android.gms:play-services:8.1.0'
 }

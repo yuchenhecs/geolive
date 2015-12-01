@@ -1,6 +1,7 @@
 package com.uiuc.tbdex.geolive;
 
 import android.app.Activity;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
@@ -14,10 +15,44 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.support.v4.widget.DrawerLayout;
+import android.view.View.OnClickListener;
 
+import android.support.v4.widget.DrawerLayout;
+//import android.app.Fragment;
+//import android.app.FragmentManager;
+
+
+import android.widget.Button;
+import android.widget.TextView;
+
+import com.getbase.floatingactionbutton.FloatingActionButton;
+import com.getbase.floatingactionbutton.FloatingActionsMenu;
+
+//import java.net.Socket;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import io.socket.client.IO;
+import io.socket.client.Socket;
+
+
+
+
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
+import android.widget.Toast;
+
+
 
 public class MainActivity extends AppCompatActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
@@ -31,6 +66,19 @@ public class MainActivity extends AppCompatActivity
     private List<ChatRoom> mChatRooms;
 
     private String mUsername;
+
+
+    private Socket mSocket;
+    {
+        try {
+            mSocket = IO.socket(Constants.CHAT_SERVER_URL);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    private Button mButton;
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
@@ -47,6 +95,7 @@ public class MainActivity extends AppCompatActivity
         mTitle = getTitle();
 
         // Set up the drawer.
+
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
@@ -59,16 +108,115 @@ public class MainActivity extends AppCompatActivity
         initializeData();
         initializeAdapter();
 
+       // mButton = (Button)findViewById(R.id.pink_icon);
+        findViewById(R.id.pink_icon).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intent = new Intent(MainActivity.this, CreateroomActivity.class);
+                intent.putExtra("username", mUsername);
+                startActivity(intent);
+            }
+
+        });
+
+
+/*
+        PopularLayout = findViewById(R.id.popular_layout);
+        LocationLayout = findViewById(R.id.location_layout);
+        //PopularLayout.setOnClickListener(this);
+        //LocationLayout.setOnClickListener(this);
+
+        PopularLayout.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                setTabSelection(0);
+            }
+        });
+
+        LocationLayout.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setTabSelection(1);
+            }
+        });
+
+        fragmentManager = getFragmentManager();
+
+
+        setTabSelection(0);
+*/
+
+    }
+/*
+    @Override
+    public void onClick(View v){
+        switch(v.getId()){
+            case R.id.popular_layout:
+                setTabSelection(0);
+                break;
+
+            case R.id.location_layout:
+                setTabSelection(1);
+                break;
+            default:
+                break;
+
+        }
     }
 
-    @Override
-    public void onNavigationDrawerItemSelected(int position) {
-        // update the main content by replacing fragments
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
-                .commit();
+    private void setTabSelection(int index){
+        clearSelection();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        hideFragments(transaction);
+        switch(index){
+            case 0:
+                PopularLayout.setBackgroundColor(0xff0000ff);
+                if(mPopular == null){
+                    mPopular = new Popular();
+                    transaction.add(R.id.content, mPopular);
+                }
+                else{
+                    transaction.show(mPopular);
+                }
+                break;
+
+            case 1:
+                PopularLayout.setBackgroundColor(0xff0000ff);
+                if(mLocation == null){
+                    mLocation = new Location();
+                    transaction.add(R.id.content, mLocation);
+                }
+                else{
+                    transaction.show(mLocation);
+                }
+                break;
+        }
     }
+
+    private void hideFragments(FragmentTransaction transaction) {
+        if (mPopular != null) {
+            transaction.hide(mPopular);
+        }
+        if (mLocation != null) {
+            transaction.hide(mLocation);
+        }
+    }
+    private void clearSelection(){
+        PopularLayout.setBackgroundColor(0xffffffff);
+        LocationLayout.setBackgroundColor(0xffffffff);
+    }
+
+*/
+@Override
+public void onNavigationDrawerItemSelected(int position) {
+    // update the main content by replacing fragments
+    FragmentManager fragmentManager = getSupportFragmentManager();
+    fragmentManager.beginTransaction()
+            .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
+            .commit();
+}
 
     public void onSectionAttached(int number) {
         switch (number) {

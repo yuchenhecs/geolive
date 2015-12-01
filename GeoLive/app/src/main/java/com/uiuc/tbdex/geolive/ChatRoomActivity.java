@@ -18,7 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONException;
-import org.json.simple.JSONObject;
+import org.json.JSONObject;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -55,6 +55,8 @@ public class ChatRoomActivity extends AppCompatActivity {
         Intent intent = getIntent();
         mUsername = intent.getStringExtra("username");
         mRoomTitle = intent.getStringExtra("roomtitle");
+        //Toast.makeText(this, mRoomTitle, Toast.LENGTH_SHORT).show();
+
 
         // set up recycler view
         mMessagesView = (RecyclerView) findViewById(R.id.messages);
@@ -106,8 +108,14 @@ public class ChatRoomActivity extends AppCompatActivity {
 
     private void attemptLogin() {
         JSONObject data = new JSONObject();
-        data.put("username", mUsername);
-        data.put("roomid", mRoomTitle);
+        try {
+            data.put("username", mUsername);
+            data.put("roomid", mRoomTitle);
+           // data.put("roomid", "room1");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
 
         mSocket.emit("add user", data);
     }
