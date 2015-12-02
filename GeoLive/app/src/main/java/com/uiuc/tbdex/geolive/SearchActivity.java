@@ -4,10 +4,11 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.MatrixCursor;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -15,6 +16,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.SearchView;
@@ -42,6 +45,9 @@ public class SearchActivity extends AppCompatActivity {
     private SearchView mSearchView;
 
     private ListView mListView;
+    private AutoCompleteTextView mAutoCompleteTextView;
+    private ArrayAdapter<String> mAutoCompleteAdapter;
+    private Button mSearchButton;
 
     {
         try {
@@ -56,6 +62,31 @@ public class SearchActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
         mListView = (ListView) findViewById(android.R.id.list);
+        mAutoCompleteTextView = (AutoCompleteTextView) findViewById(R.id.my_search_input);
+        mAutoCompleteTextView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                mSocket.emit("request topk", s.toString());
+            }
+        });
+
+        mSearchButton = (Button) findViewById(R.id.my_search_button);
+        mSearchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mSocket.emit("room search", mAutoCompleteTextView.getText());
+            }
+        });
 
         mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
         mSocket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
@@ -76,26 +107,26 @@ public class SearchActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_search, menu);
+//        getMenuInflater().inflate(R.menu.menu_search, menu);
 
-        mSearchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        mSearchView = (SearchView) menu.findItem(R.id.search).getActionView();
-        mSearchView.setSearchableInfo(mSearchManager.getSearchableInfo(getComponentName()));
-        mSearchView.setIconifiedByDefault(false);
-
-        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                mSocket.emit("request topk", newText);
-
-                return true;
-            }
-        });
+//        mSearchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+//        mSearchView = (SearchView) menu.findItem(R.id.search).getActionView();
+//        mSearchView.setSearchableInfo(mSearchManager.getSearchableInfo(getComponentName()));
+//        mSearchView.setIconifiedByDefault(false);
+//
+//        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+//            @Override
+//            public boolean onQueryTextSubmit(String query) {
+//                return false;
+//            }
+//
+//            @Override
+//            public boolean onQueryTextChange(String newText) {
+//                mSocket.emit("request topk", newText);
+//
+//                return true;
+//            }
+//        });
 
         return true;
     }
@@ -205,21 +236,26 @@ public class SearchActivity extends AppCompatActivity {
                     return;
                 }
 
-                String[] columns = new String[]{"_id", "text"};
-                Object[] temp = new Object[]{0, "default"};
+                mAutoCompleteAdapter = new ArrayAdapter<String>(SearchActivity.this, R.layout.item_search_suggestion_auto, mTopKResult);
+                mAutoCompleteTextView.setAdapter(mAutoCompleteAdapter);
+                mAutoCompleteTextView.showDropDown();
 
-                MatrixCursor cursor = new MatrixCursor(columns);
 
-                for (int i = 0; i < mTopKResult.size(); i++) {
-                    temp[0] = i;
-                    temp[1] = mTopKResult.get(i);
-
-                    cursor.addRow(temp);
-
-                    Log.d("SearchView", temp[1].toString());
-                }
-
-                mSearchView.setSuggestionsAdapter(new SearchSuggestionAdapter(SearchActivity.this, cursor, mTopKResult));
+//                String[] columns = new String[]{"_id", "text"};
+//                Object[] temp = new Object[]{0, "default"};
+//
+//                MatrixCursor cursor = new MatrixCursor(columns);
+//
+//                for (int i = 0; i < mTopKResult.size(); i++) {
+//                    temp[0] = i;
+//                    temp[1] = mTopKResult.get(i);
+//
+//                    cursor.addRow(temp);
+//
+//                    Log.d("SearchView", temp[1].toString());
+//                }
+//
+//                mSearchView.setSuggestionsAdapter(new SearchSuggestionAdapter(SearchActivity.this, cursor, mTopKResult));
             }
         });
     }
@@ -310,28 +346,28 @@ public class SearchActivity extends AppCompatActivity {
 
 
     public class SearchSuggestionAdapter extends CursorAdapter {
-
+        private LayoutInflater cursorInflater;
         private List<String> items;
-        private TextView textView;
+//        private TextView textView;
 
         public SearchSuggestionAdapter(Context context, Cursor cursor, List<String> items) {
-            super(context, cursor, false);
+            super(context, cursor, true);
             this.items = items;
+            cursorInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         }
 
         @Override
         public View newView(Context context, Cursor cursor, ViewGroup parent) {
-            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            View view = inflater.inflate(R.layout.item_search_suggestion, parent, false);
-            textView = (TextView) view.findViewById(R.id.search_suggestion);
             Log.d("SearchView", "newView");
-
-            return view;
+//            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            return cursorInflater.inflate(R.layout.item_search_suggestion, parent, false);
+//            textView = (TextView) view.findViewById(R.id.search_suggestion);
         }
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
             if (items.size() > 0) {
+                TextView textView = (TextView) view.findViewById(R.id.search_suggestion);
                 textView.setText(items.get(cursor.getPosition()));
                 Log.d("SearchView", "bindView");
             }
