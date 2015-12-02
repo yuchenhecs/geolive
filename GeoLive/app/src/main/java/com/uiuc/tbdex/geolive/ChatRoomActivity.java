@@ -1,5 +1,7 @@
 package com.uiuc.tbdex.geolive;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -12,12 +14,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
 import org.json.JSONException;
+//import org.json.simple.JSONObject;
 import org.json.JSONObject;
 
 import java.net.URISyntaxException;
@@ -52,11 +57,9 @@ public class ChatRoomActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_room);
 
-        Intent intent = getIntent();
+        final Intent intent = getIntent();
         mUsername = intent.getStringExtra("username");
         mRoomTitle = intent.getStringExtra("roomtitle");
-        //Toast.makeText(this, mRoomTitle, Toast.LENGTH_SHORT).show();
-
 
         // set up recycler view
         mMessagesView = (RecyclerView) findViewById(R.id.messages);
@@ -88,25 +91,48 @@ public class ChatRoomActivity extends AppCompatActivity {
             }
         });
 
+        Button showButton = (Button) findViewById(R.id.showButton);
+        showButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                String data=null;
+                mSocket.emit("show people", data);
+            }
+        });
+
+        Button danmuButton = (Button) findViewById(R.id.danmu_button);
+        danmuButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent startDanmuIntent = new Intent(ChatRoomActivity.this, DanmuActivity.class);
+                startDanmuIntent.putExtra("username", mUsername);
+                startDanmuIntent.putExtra("roomtitle", mRoomTitle);
+                startActivity(startDanmuIntent);
+            }
+        });
+
         // socket.io
         setUpSocketIo();
 
-        attemptLogin();
+//        attemptLogin();
     }
 
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        attemptLogin();
+    }
 
     @Override
     public void onStop() {
         super.onStop();
 
-       // mSocket.disconnect();
-        String data=null;
-        mSocket.emit("leave room",data);
-        mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
-        mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
-        mSocket.off("new message", onNewMessage);
-        mSocket.off("user joined", onUserJoined);
-        mSocket.off("user left", onUserLeft);
+        // mSocket.disconnect();
+
+        String data = null;
+        mSocket.emit("leave room", data);
     }
 
 
@@ -115,6 +141,14 @@ public class ChatRoomActivity extends AppCompatActivity {
         super.onDestroy();
 
         //mSocket.disconnect();
+//        String data=null;
+//        mSocket.emit("leave room",data);
+        mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
+        mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
+        mSocket.off("new message", onNewMessage);
+        mSocket.off("user joined", onUserJoined);
+        mSocket.off("user left", onUserLeft);
+        mSocket.off("show people", onShowPeople);
     }
 
     private void attemptLogin() {
@@ -122,11 +156,9 @@ public class ChatRoomActivity extends AppCompatActivity {
         try {
             data.put("username", mUsername);
             data.put("roomid", mRoomTitle);
-           // data.put("roomid", "room1");
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
 
         mSocket.emit("add user", data);
     }
@@ -180,6 +212,7 @@ public class ChatRoomActivity extends AppCompatActivity {
         mSocket.on("new message", onNewMessage);
         mSocket.on("user joined", onUserJoined);
         mSocket.on("user left", onUserLeft);
+        mSocket.on("show people",onShowPeople);
 //        mSocket.on("typing", onTyping);
 //        mSocket.on("stop typing", onStopTyping);
 
@@ -285,4 +318,54 @@ public class ChatRoomActivity extends AppCompatActivity {
         }
     };
 
+    private Emitter.Listener onShowPeople = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    JSONObject data = (JSONObject) args[0];
+                    JSONArray array;
+                    ArrayList<String> element = new ArrayList<String>();
+                    try {
+                        array = data.getJSONArray("people");
+
+                        for (int i = 0; i < array.length(); i++) {
+                            element.add(array.getString(i));
+                        }
+                    } catch (JSONException e) {
+                        return;
+                    }
+
+
+
+                    final CharSequence[] charSequenceItems = element.toArray(new CharSequence[element.size()]);
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(ChatRoomActivity.this);
+                    builder.setTitle("People in this room");
+                    builder.setItems(charSequenceItems, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int item) {
+                            // Do something with the selection
+                        }
+                    });
+                    AlertDialog alert = builder.create();
+                    alert.show();
+                }
+            });
+        }
+    };
+
+    @Override
+    public void onBackPressed() {
+        String data=null;
+        mSocket.emit("leave room", data);
+        mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
+        mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
+        mSocket.off("new message", onNewMessage);
+        mSocket.off("user joined", onUserJoined);
+        mSocket.off("user left", onUserLeft);
+
+        Intent backMain = new Intent(this, MainActivity.class);
+        startActivity(backMain);
+    }
 }

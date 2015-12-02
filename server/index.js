@@ -124,7 +124,7 @@ io.on('connection', function (socket) {
 
       socket.username = data;
 
-      var demoUser = new users_data({ name: socket.username, rooomid: null });
+      var demoUser = new users_data({ name: socket.username, roomid: null });
 
         demoUser.save(function (err){
             console.log('User inserted',socket.username);
@@ -132,7 +132,7 @@ io.on('connection', function (socket) {
 
       console.log("logined: "+socket.username);
     }
-    
+
   });
 
 
@@ -144,7 +144,7 @@ io.on('connection', function (socket) {
     var nearby_room;
     var nearby_room_name;
 
-    rooms_data.find({}).sort({num_users: -1}).limit(10).exec( 
+    rooms_data.find({}).sort({num_users: -1}).limit(10).exec(
     function(err, room_info) {
         //???
         if(err){
@@ -200,8 +200,8 @@ io.on('connection', function (socket) {
   });
 
 
- 
-  
+
+
 
 //-------------------------stage 2:search room--------------------------------
 
@@ -241,7 +241,7 @@ io.on('connection', function (socket) {
     //console.log(data);
   });
 
-  
+
 
 
   // when the client emits 'add user', this listens and executes
@@ -335,7 +335,7 @@ io.on('connection', function (socket) {
     //socket.username = parsedData["username"];
     socket.roomid = data["roomid"];
     socket.roomname = data["roomname"];
- 
+
     var numUsers=1;
     if(rooms[socket.roomid] == null){
         //create a new room
@@ -352,7 +352,7 @@ io.on('connection', function (socket) {
 
         // console.log(io.sockets.adapter.rooms[socket.roomid]);
         socket.emit('create room', {
-          flag:0 
+          flag:0
         });
     }else{
         //load data from existing room
@@ -380,7 +380,7 @@ io.on('connection', function (socket) {
 
 
     var numUsers=1;
-    if(rooms[socket.roomid] == null){    
+    if(rooms[socket.roomid] == null){
         socket.emit('add user', {
           flag: 1// no such room
         });
@@ -404,7 +404,7 @@ io.on('connection', function (socket) {
         users_data.findOne({ name:socket.username }, function (err, doc){
           doc.roomid=socket.roomid;
           doc.save();
-          
+
         });
 
         socket.emit('add user', {
@@ -422,7 +422,7 @@ io.on('connection', function (socket) {
           numUsers: numUsers
         });
     }
-    
+
   });
 
 
@@ -555,8 +555,7 @@ io.on('connection', function (socket) {
       users_data.findOne({ name:socket.username }, function (err, doc){
           doc.remove();
       });
-    }     
+    }
     loginSuccess=false;
   });
 });
-

@@ -15,6 +15,7 @@
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:scrollbars="vertical"
         android:scrollbarStyle="outsideOverlay"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -22,6 +23,12 @@
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:orientation="horizontal"
         android:gravity="center_vertical">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Danmu"
+            android:id="@+id/danmu_button" />
 
         <EditText
             android:id="@+id/message_input"
@@ -35,6 +42,14 @@
             android:inputType="text"
             android:maxLines="1"
             android:singleLine="true"/>
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="show"
+            android:id="@+id/showButton" />
+
         <ImageButton
             android:id="@+id/send_button"
             android:layout_width="wrap_content"

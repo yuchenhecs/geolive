@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.graphics.Color;
-import android.os.Debug;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -141,6 +140,90 @@ public class SearchActivity extends AppCompatActivity {
     };
 
 
+//    private Emitter.Listener onTopkResult = new Emitter.Listener() {
+//        @Override
+//        public void call(final Object... args) {
+//            new Thread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    Looper.prepare();
+//
+//                    mTopKResult.clear();
+////                    Log.d("SearchActivity", "changing suggestion");
+//
+//                    JSONObject data = (JSONObject) args[0];
+//                    JSONArray array;
+//
+//                    try {
+//                        array = data.getJSONArray("keywords");
+//
+//                        for (int i = 0; i < array.length(); i++) {
+//                            mTopKResult.add(array.getString(i));
+//                        }
+//                    } catch (JSONException e) {
+//                        return;
+//                    }
+//
+//                    String[] columns = new String[]{"_id", "text"};
+//                    Object[] temp = new Object[]{0, "default"};
+//
+//                    MatrixCursor cursor = new MatrixCursor(columns);
+//
+//                    for (int i = 0; i < mTopKResult.size(); i++) {
+//                        temp[0] = i;
+//                        temp[1] = mTopKResult.get(i);
+//
+//                        cursor.addRow(temp);
+//
+//                        Log.d("SearchView", temp[1].toString());
+//                    }
+//
+//                    SearchSuggestionAdapter searchSuggestionAdapter = new SearchSuggestionAdapter(getApplicationContext(), cursor, mTopKResult);
+//                    mSearchView.setSuggestionsAdapter(new SearchSuggestionAdapter(getApplicationContext(), cursor, mTopKResult));
+//                }
+//            }).start();
+//        }
+//    };
+
+    private void updateSearchSuggestion(final Object... args) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mTopKResult.clear();
+//                    Log.d("SearchActivity", "changing suggestion");
+
+                JSONObject data = (JSONObject) args[0];
+                JSONArray array;
+
+                try {
+                    array = data.getJSONArray("keywords");
+
+                    for (int i = 0; i < array.length(); i++) {
+                        mTopKResult.add(array.getString(i));
+                    }
+                } catch (JSONException e) {
+                    return;
+                }
+
+                String[] columns = new String[]{"_id", "text"};
+                Object[] temp = new Object[]{0, "default"};
+
+                MatrixCursor cursor = new MatrixCursor(columns);
+
+                for (int i = 0; i < mTopKResult.size(); i++) {
+                    temp[0] = i;
+                    temp[1] = mTopKResult.get(i);
+
+                    cursor.addRow(temp);
+
+                    Log.d("SearchView", temp[1].toString());
+                }
+
+                mSearchView.setSuggestionsAdapter(new SearchSuggestionAdapter(SearchActivity.this, cursor, mTopKResult));
+            }
+        });
+    }
+
     private Emitter.Listener onSearchResult = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
@@ -184,41 +267,45 @@ public class SearchActivity extends AppCompatActivity {
     private Emitter.Listener onTopkResult = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    mTopKResult.clear();
-                    Log.d("SearchActivity", "changing suggestion");
-
-                    JSONObject data = (JSONObject) args[0];
-                    JSONArray array;
-
-                    try {
-                        array = data.getJSONArray("keywords");
-
-                        for (int i = 0; i < array.length(); i++) {
-                            mTopKResult.add(array.getString(i));
-                        }
-                    } catch (JSONException e) {
-                        return;
-                    }
-
-                    String[] columns = new String[]{"_id", "text"};
-                    Object[] temp = new Object[]{0, "default"};
-
-                    MatrixCursor cursor = new MatrixCursor(columns);
-
-                    for (int i = 0; i < mTopKResult.size(); i++) {
-                        temp[0] = i;
-                        temp[1] = mTopKResult.get(i);
-
-                        cursor.addRow(temp);
-                    }
-
-                    mSearchView.setSuggestionsAdapter(new SearchSuggestionAdapter(getApplicationContext(), cursor, mTopKResult));
+//            runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    mTopKResult.clear();
+////                    Log.d("SearchActivity", "changing suggestion");
+//
+//                    JSONObject data = (JSONObject) args[0];
+//                    JSONArray array;
+//
+//                    try {
+//                        array = data.getJSONArray("keywords");
+//
+//                        for (int i = 0; i < array.length(); i++) {
+//                            mTopKResult.add(array.getString(i));
+//                        }
+//                    } catch (JSONException e) {
+//                        return;
+//                    }
+//
+//                    String[] columns = new String[]{"_id", "text"};
+//                    Object[] temp = new Object[]{0, "default"};
+//
+//                    MatrixCursor cursor = new MatrixCursor(columns);
+//
+//                    for (int i = 0; i < mTopKResult.size(); i++) {
+//                        temp[0] = i;
+//                        temp[1] = mTopKResult.get(i);
+//
+//                        cursor.addRow(temp);
+//
+//                        Log.d("SearchView", temp[1].toString());
+//                    }
+//
+//                    mSearchView.setSuggestionsAdapter(new SearchSuggestionAdapter(SearchActivity.this, cursor, mTopKResult));
+//                    searchSuggestionAdapter.notifyDataSetChanged();
+                    updateSearchSuggestion(args);
                 }
-            });
-        }
+//            });
+//        }
     };
 
 
@@ -237,15 +324,16 @@ public class SearchActivity extends AppCompatActivity {
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             View view = inflater.inflate(R.layout.item_search_suggestion, parent, false);
             textView = (TextView) view.findViewById(R.id.search_suggestion);
+            Log.d("SearchView", "newView");
 
             return view;
         }
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
-            // FIXME: Check bug (size == 0)
             if (items.size() > 0) {
                 textView.setText(items.get(cursor.getPosition()));
+                Log.d("SearchView", "bindView");
             }
         }
     }

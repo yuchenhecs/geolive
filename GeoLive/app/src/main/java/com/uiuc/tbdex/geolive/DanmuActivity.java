@@ -1,5 +1,8 @@
 package com.uiuc.tbdex.geolive;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.drawable.LayerDrawable;
 import android.os.*;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +16,7 @@ import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
@@ -20,6 +24,7 @@ import android.widget.RelativeLayout.LayoutParams;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.simple.JSONObject;
 
@@ -45,7 +50,7 @@ public class DanmuActivity extends AppCompatActivity {
     private DanmuHandler mDanmuHandler;
     private RelativeLayout mDanmuContainer;
 
-    private ArrayList<Danmu> mDanmus;
+    private ArrayList<Danmu> mDanmus = new ArrayList<>();
 //    private ArrayList<Danmu> mTestDanmus;
 
     private int mVerticalSpace = 0;
@@ -57,8 +62,8 @@ public class DanmuActivity extends AppCompatActivity {
     protected int mTextSizeInPx;
 
     // SocketIO
-    private String mUsername = "test";
-    private String mRoomTitle = "test";
+    private String mUsername;
+    private String mRoomTitle;
     private Socket mSocket;
     {
         try {
@@ -72,6 +77,10 @@ public class DanmuActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_danmu);
+
+        final Intent intent = getIntent();
+        mUsername = intent.getStringExtra("username");
+        mRoomTitle = intent.getStringExtra("roomtitle");
 
         mInputMessageView = (EditText) findViewById(R.id.message_input);
         mInputMessageView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -90,8 +99,29 @@ public class DanmuActivity extends AppCompatActivity {
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "sending", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getApplicationContext(), "sending", Toast.LENGTH_SHORT).show();
+                Log.d("Danmu", "sending");
                 attemptSend();
+            }
+        });
+
+        Button showButton = (Button) findViewById(R.id.showButton);
+        showButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                String data=null;
+                mSocket.emit("show people", data);
+            }
+        });
+
+        Button chatroomButton = (Button) findViewById(R.id.chatroom_button);
+        chatroomButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent startChatroomIntent = new Intent(DanmuActivity.this, ChatRoomActivity.class);
+                startChatroomIntent.putExtra("username", mUsername);
+                startChatroomIntent.putExtra("roomtitle", mRoomTitle);
+                startActivity(startChatroomIntent);
             }
         });
 
@@ -131,6 +161,13 @@ public class DanmuActivity extends AppCompatActivity {
         // socket.io
         setUpSocketIo();
 
+//        attemptLogin();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
         attemptLogin();
     }
 
@@ -138,11 +175,8 @@ public class DanmuActivity extends AppCompatActivity {
     public void onStop() {
         super.onStop();
 
-        mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
-        mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
-        mSocket.off("new message", onNewMessage);
-        mSocket.off("user joined", onUserJoined);
-        mSocket.off("user left", onUserLeft);
+        String data=null;
+        mSocket.emit("leave room", data);
     }
 
 
@@ -151,6 +185,11 @@ public class DanmuActivity extends AppCompatActivity {
         super.onDestroy();
 
 //        mSocket.disconnect();
+        mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
+        mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
+        mSocket.off("new message", onNewMessage);
+        mSocket.off("user joined", onUserJoined);
+        mSocket.off("user left", onUserLeft);
     }
 
     @Override
@@ -317,10 +356,12 @@ public class DanmuActivity extends AppCompatActivity {
 
 
     private void attemptSend() {
+        Log.d("Danmu", mUsername);
         if (mUsername == null) return;
-        if (!mSocket.connected()) return;
+//        if (!mSocket.connected()) return;
 
         String message = mInputMessageView.getText().toString().trim();
+        Log.d("Danmu", message);
         if (TextUtils.isEmpty(message)) {
             mInputMessageView.requestFocus();
             return;
@@ -339,6 +380,7 @@ public class DanmuActivity extends AppCompatActivity {
         mSocket.on("new message", onNewMessage);
         mSocket.on("user joined", onUserJoined);
         mSocket.on("user left", onUserLeft);
+        mSocket.on("show people",onShowPeople);
 //        mSocket.on("typing", onTyping);
 //        mSocket.on("stop typing", onStopTyping);
 
@@ -443,4 +485,55 @@ public class DanmuActivity extends AppCompatActivity {
             });
         }
     };
+
+    private Emitter.Listener onShowPeople = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    org.json.JSONObject data = (org.json.JSONObject) args[0];
+                    JSONArray array;
+                    ArrayList<String> element = new ArrayList<String>();
+                    try {
+                        array = data.getJSONArray("people");
+
+                        for (int i = 0; i < array.length(); i++) {
+                            element.add(array.getString(i));
+                        }
+                    } catch (JSONException e) {
+                        return;
+                    }
+
+
+
+                    final CharSequence[] charSequenceItems = element.toArray(new CharSequence[element.size()]);
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(DanmuActivity.this);
+                    builder.setTitle("People in this room");
+                    builder.setItems(charSequenceItems, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int item) {
+                            // Do something with the selection
+                        }
+                    });
+                    AlertDialog alert = builder.create();
+                    alert.show();
+                }
+            });
+        }
+    };
+
+    @Override
+    public void onBackPressed() {
+        String data=null;
+        mSocket.emit("leave room", data);
+        mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
+        mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
+        mSocket.off("new message", onNewMessage);
+        mSocket.off("user joined", onUserJoined);
+        mSocket.off("user left", onUserLeft);
+
+        Intent backMain = new Intent(this, MainActivity.class);
+        startActivity(backMain);
+    }
 }
