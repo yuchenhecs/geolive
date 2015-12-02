@@ -2,8 +2,10 @@ package com.uiuc.tbdex.geolive;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,6 +57,7 @@ public class LocRecoRecyclerViewAdapter extends RecyclerView.Adapter<LocRecoRecy
     List<ChatRoom> mChatRooms;
     Context mContext;
     String mUsername;
+    View view;
 
     LocRecoRecyclerViewAdapter(Context context, String username, List<ChatRoom> chatRooms) {
         mContext = context;
@@ -71,7 +74,7 @@ public class LocRecoRecyclerViewAdapter extends RecyclerView.Adapter<LocRecoRecy
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater
+         view = LayoutInflater
                 .from(parent.getContext())
                 .inflate(R.layout.item_loc_reco_card_view, parent, false);
         return new ViewHolder(view);
@@ -83,9 +86,30 @@ public class LocRecoRecyclerViewAdapter extends RecyclerView.Adapter<LocRecoRecy
         viewHolder.roomTitle.setText(mChatRooms.get(position).getTitle());
         viewHolder.currentRoom = mChatRooms.get(position);
         viewHolder.clickable=mChatRooms.get(position).getClick();
+
+        Log.d("abc",String.valueOf(position)+":"+String.valueOf(viewHolder.clickable));
+        //Toast.makeText(mContext, String.valueOf(position)+":"+String.valueOf(viewHolder.clickable), Toast.LENGTH_SHORT).show();
         if(!viewHolder.clickable) {
+            Log.d("abc", "color");
+           // viewHolder.cardView = new CardView(mContext);
+
+
             viewHolder.roomTitle.setTextColor(mChatRooms.get(position).getColor());
-            viewHolder.cardView.setBackgroundColor(mChatRooms.get(position).getBackColor());
+            viewHolder.cardView.setCardBackgroundColor(mChatRooms.get(position).getBackColor());
+
+          //  viewHolder.cardView.setBackgroundColor(mChatRooms.get(position).getBackColor());
+
+        }else{
+         //   viewHolder.cardView = new CardView(mContext);
+
+            viewHolder.roomTitle.setTextColor(Color.BLACK);
+            //viewHolder.cardView.setBackgroundColor(Color.TRANSPARENT);
+            //viewHolder.cardView = (CardView) view.findViewById(R.id.card_view);
+
+            viewHolder.cardView.setCardBackgroundColor(Color.WHITE);
+
+            //viewHolder.roomTitle.setTextColor(Color.BLACK);
+            //viewHolder.cardView.
         }
         //viewHolder.color=mChatRooms.get(position).getColor();
 
