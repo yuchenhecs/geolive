@@ -124,7 +124,7 @@ io.on('connection', function (socket) {
 
       socket.username = data;
 
-      var demoUser = new users_data({ name: socket.username, rooomid: null });
+      var demoUser = new users_data({ name: socket.username, roomid: null });
 
         demoUser.save(function (err){
             console.log('User inserted',socket.username);
