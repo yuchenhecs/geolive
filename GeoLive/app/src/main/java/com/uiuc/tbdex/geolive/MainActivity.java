@@ -1,6 +1,7 @@
 package com.uiuc.tbdex.geolive;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
@@ -360,8 +361,11 @@ public class MainActivity extends AppCompatActivity
 
     private void updateMainPage(){
         mChatRooms.clear();
+        //locRecoRecyclerViewAdapter.notifyDataSetChanged();
 
         mainPageReady=false;
+
+        //initializeAdapter();
 
         mChatRooms.add(new ChatRoom("◎ Nearby Rooms",null, Color.WHITE,Color.MAGENTA));
         for (int i = 0; i < nearbyRoom.size(); i++) {
