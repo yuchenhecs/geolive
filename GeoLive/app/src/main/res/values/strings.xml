@@ -59,4 +59,5 @@
     <string name = "no_records">There are no records</string>
     <string name="title_activity_search">SearchActivity</string>
     <string name="title_activity_danmu">DanmuActivity</string>
+    <string name = "title_activity_createroom">CreateroomActivity</string>
 </resources>

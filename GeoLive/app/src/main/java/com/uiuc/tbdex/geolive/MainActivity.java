@@ -2,6 +2,8 @@ package com.uiuc.tbdex.geolive;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
+import android.location.Location;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -16,12 +18,33 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
 import android.widget.Button;
+import android.widget.Toast;
 
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.socket.client.IO;
+import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
+
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.Api;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
+import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
+import com.google.android.gms.drive.Drive;
+import com.google.android.gms.location.ActivityRecognition;
+import com.google.android.gms.location.LocationServices;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+//import gms.drive.*;
+
 public class MainActivity extends AppCompatActivity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks,ConnectionCallbacks, OnConnectionFailedListener{
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -32,6 +55,31 @@ public class MainActivity extends AppCompatActivity
     private List<ChatRoom> mChatRooms;
 
     private String mUsername;
+
+    private LocRecoRecyclerViewAdapter locRecoRecyclerViewAdapter;
+
+    private GoogleApiClient mGoogleApiClient;
+
+    private boolean mainPageReady=false;
+
+    private boolean ApiReady=false;
+
+    ArrayList<String> popularRoom = new ArrayList<String>();
+    ArrayList<String> popularRoomName = new ArrayList<String>();
+    ArrayList<String> nearbyRoom = new ArrayList<String>();
+    ArrayList<String> nearbyRoomName = new ArrayList<String>();
+
+    String x,y;
+
+    private Socket mSocket;
+    {
+        try {
+            mSocket = IO.socket(Constants.CHAT_SERVER_URL);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 
     private Button mButton; // Danmu Test Only
 
@@ -44,6 +92,15 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .addApi(ActivityRecognition.API)
+                .build();
+
+
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
@@ -60,8 +117,10 @@ public class MainActivity extends AppCompatActivity
         mRecyclerView = (RecyclerView) findViewById(R.id.loc_reco_recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         initializeData();
+
         initializeAdapter();
 
+        mSocket.connect();
         mButton = (Button) findViewById(R.id.button);
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -70,6 +129,41 @@ public class MainActivity extends AppCompatActivity
                 startActivity(intent);
             }
         });
+
+        findViewById(R.id.pink_icon).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intent = new Intent(MainActivity.this, CreateroomActivity.class);
+                intent.putExtra("username", mUsername);
+                intent.putExtra("x", x);
+                intent.putExtra("y", y);
+                startActivity(intent);
+            }
+
+        });
+
+
+        Button tmpbotton=(Button)findViewById(R.id.button2);
+        tmpbotton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+                        mGoogleApiClient);
+                Toast.makeText(getApplicationContext(), String.valueOf(mLastLocation.getLatitude()) + "," + String.valueOf(mLastLocation.getLongitude()), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+
+        //mChatRooms.clear();
+        //locRecoRecyclerViewAdapter.notifyDataSetChanged();
+        mSocket.on("popular results", onPopularResults);
+        mSocket.on("nearby results", onNearbyResults);
+
+
+
+
+
     }
 
     @Override
@@ -174,14 +268,14 @@ public class MainActivity extends AppCompatActivity
 
     private void initializeData() {
         mChatRooms = new ArrayList<>();
-        mChatRooms.add(new ChatRoom("room1"));
-        mChatRooms.add(new ChatRoom("room2"));
-        mChatRooms.add(new ChatRoom("New Room"));
+        //mChatRooms.add(new ChatRoom("room1","room1"));
+        //mChatRooms.add(new ChatRoom("room2","room2"));
+        //mChatRooms.add(new ChatRoom("New Room"));
     }
 
 
     private void initializeAdapter() {
-        LocRecoRecyclerViewAdapter locRecoRecyclerViewAdapter = new LocRecoRecyclerViewAdapter(getApplicationContext(), mUsername, mChatRooms);
+        locRecoRecyclerViewAdapter = new LocRecoRecyclerViewAdapter(getApplicationContext(), mUsername, mChatRooms);
         mRecyclerView.setAdapter(locRecoRecyclerViewAdapter);
     }
 
@@ -191,4 +285,197 @@ public class MainActivity extends AppCompatActivity
 //        intent.putExtra("roomtitle", chatRoomTitle);
 //        startActivity(intent);
 //    }
+
+
+    @Override
+    public void onConnectionSuspended(int cause) {
+        // The connection has been interrupted.
+        // Disable any UI components that depend on Google APIs
+        // until onConnected() is called.
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult result) {
+        // This callback is important for handling errors that
+        // may occur while attempting to connect with Google.
+        //
+        // More about this in the 'Handle Connection Failures' section.
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        //if (!mResolvingError) {  // more about this later
+        mGoogleApiClient.connect();
+
+
+        //}
+    }
+
+    @Override
+    protected void onStop() {
+        mGoogleApiClient.disconnect();
+
+
+        super.onStop();
+    }
+
+    @Override
+    public void onConnected(Bundle connectionHint) {
+
+        Location mLastLocation=LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        x=String.valueOf(mLastLocation.getLongitude());
+        y=String.valueOf(mLastLocation.getLatitude());
+
+        //ApiReady=true;
+        fetchData();
+    }
+
+    public void fetchData(){
+
+
+        JSONObject data = new JSONObject();
+        try {
+            data.put("longitude", x);
+            data.put("latitude", y);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        mSocket.emit("main page", data);
+    }
+
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        mSocket.off("popular results", onPopularResults);
+        mSocket.off("nearby results", onNearbyResults);
+        mSocket.disconnect();
+    }
+
+
+
+    private void updateMainPage(){
+        mChatRooms.clear();
+
+        mainPageReady=false;
+
+        mChatRooms.add(new ChatRoom("◎ Nearby Rooms",null, Color.WHITE,Color.MAGENTA));
+        for (int i = 0; i < nearbyRoom.size(); i++) {
+            mChatRooms.add(new ChatRoom(nearbyRoomName.get(i),nearbyRoom.get(i)));
+        }
+
+        mChatRooms.add(new ChatRoom("◎ Popular Rooms",null, Color.WHITE,Color.MAGENTA));
+
+        for (int i = 0; i < popularRoom.size(); i++) {
+            mChatRooms.add(new ChatRoom(popularRoomName.get(i),popularRoom.get(i)));
+        }
+        //Toast.makeText(getApplicationContext(), "1233333333333333333", Toast.LENGTH_SHORT).show();
+
+        locRecoRecyclerViewAdapter.notifyDataSetChanged();
+        popularRoom.clear();
+        popularRoomName.clear();
+        nearbyRoom.clear();
+        nearbyRoomName.clear();
+
+    }
+
+    private Emitter.Listener onPopularResults = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    JSONObject data = (JSONObject) args[0];
+                    JSONArray array;
+                    // ArrayList<String> element2 = new ArrayList<String>();
+                    try {
+                        //mChatRooms.add(new ChatRoom("123", "123"));
+                        array = data.getJSONArray("popular_room");
+                        for (int i = 0; i < array.length(); i++) {
+                            // mChatRooms.add(new ChatRoom(array.getString(i)));
+                            popularRoom.add(array.getString(i));
+                        }
+
+                        Toast.makeText(getApplicationContext(), "asdasdasdas", Toast.LENGTH_SHORT).show();
+
+                        array = data.getJSONArray("popular_room_name");
+                        for (int i = 0; i < array.length(); i++) {
+                            //mChatRooms.add(new ChatRoom(array.getString(i),element.get(i)));
+                            popularRoomName.add(array.getString(i));
+                        }
+
+                        if(mainPageReady){
+                            updateMainPage();
+                        }else{
+                            mainPageReady=true;
+                        }
+                        //Toast.makeText(getApplicationContext(), "zzzzzzzzzzzz", Toast.LENGTH_SHORT).show();
+                        //initializeAdapter();
+                        //locRecoRecyclerViewAdapter.notifyDataSetChanged();
+
+                    } catch (JSONException e) {
+                        Toast.makeText(getApplicationContext(), e.toString() , Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                }
+            });
+        }
+    };
+
+    private Emitter.Listener onNearbyResults = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    JSONObject data = (JSONObject) args[0];
+                    JSONArray array;
+                    //ArrayList<String> element = new ArrayList<String>();
+                    // ArrayList<String> element2 = new ArrayList<String>();
+                    try {
+                        //mChatRooms.add(new ChatRoom("123", "123"));
+
+                        array = data.getJSONArray("nearby_room");
+                        for (int i = 0; i < array.length(); i++) {
+                            // mChatRooms.add(new ChatRoom(array.getString(i)));
+                            nearbyRoom.add(array.getString(i));
+                        }
+
+                        Toast.makeText(getApplicationContext(), "zzzzzzzzzzzzz", Toast.LENGTH_SHORT).show();
+
+                        array = data.getJSONArray("nearby_room_name");
+                        for (int i = 0; i < array.length(); i++) {
+                            //mChatRooms.add(new ChatRoom(array.getString(i),element.get(i)));
+                            nearbyRoomName.add(array.getString(i));
+                        }
+
+                        if(mainPageReady){
+                            updateMainPage();
+                        }else{
+                            mainPageReady=true;
+                        }
+                        //Toast.makeText(getApplicationContext(), "zzzzzzzzzzzz", Toast.LENGTH_SHORT).show();
+                        //initializeAdapter();
+                        //locRecoRecyclerViewAdapter.notifyDataSetChanged();
+
+                    } catch (JSONException e) {
+                        Toast.makeText(getApplicationContext(), e.toString() , Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                }
+            });
+        }
+    };
 }
+
+
+
+
+

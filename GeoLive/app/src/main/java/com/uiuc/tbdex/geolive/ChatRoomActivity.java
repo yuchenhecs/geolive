@@ -18,7 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONException;
-import org.json.simple.JSONObject;
+import org.json.JSONObject;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -55,6 +55,8 @@ public class ChatRoomActivity extends AppCompatActivity {
         Intent intent = getIntent();
         mUsername = intent.getStringExtra("username");
         mRoomTitle = intent.getStringExtra("roomtitle");
+        //Toast.makeText(this, mRoomTitle, Toast.LENGTH_SHORT).show();
+
 
         // set up recycler view
         mMessagesView = (RecyclerView) findViewById(R.id.messages);
@@ -97,6 +99,9 @@ public class ChatRoomActivity extends AppCompatActivity {
     public void onStop() {
         super.onStop();
 
+       // mSocket.disconnect();
+        String data=null;
+        mSocket.emit("leave room",data);
         mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
         mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
         mSocket.off("new message", onNewMessage);
@@ -109,13 +114,19 @@ public class ChatRoomActivity extends AppCompatActivity {
     public void onDestroy() {
         super.onDestroy();
 
-        mSocket.disconnect();
+        //mSocket.disconnect();
     }
 
     private void attemptLogin() {
         JSONObject data = new JSONObject();
-        data.put("username", mUsername);
-        data.put("roomid", mRoomTitle);
+        try {
+            data.put("username", mUsername);
+            data.put("roomid", mRoomTitle);
+           // data.put("roomid", "room1");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
 
         mSocket.emit("add user", data);
     }
@@ -140,8 +151,11 @@ public class ChatRoomActivity extends AppCompatActivity {
 
 
     private void attemptSend() {
+
+        Toast.makeText(getApplicationContext(), mUsername, Toast.LENGTH_SHORT).show();
+
         if (mUsername == null) return;
-        if (!mSocket.connected()) return;
+        //if (!mSocket.connected()) return;
 
         String message = mInputMessageView.getText().toString().trim();
         if (TextUtils.isEmpty(message)) {
