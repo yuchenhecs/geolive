@@ -22,6 +22,8 @@ public class LocRecoRecyclerViewAdapter extends RecyclerView.Adapter<LocRecoRecy
         CardView cardView;
         TextView roomTitle;
         ChatRoom currentRoom;
+        boolean clickable=true;
+//        int color;
 
 
         ViewHolder(final View itemView) {
@@ -31,18 +33,22 @@ public class LocRecoRecyclerViewAdapter extends RecyclerView.Adapter<LocRecoRecy
             cardView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(v.getContext(), currentRoom.getTitle(), Toast.LENGTH_SHORT).show();
+                    if(clickable) {
+                        Toast.makeText(v.getContext(), currentRoom.getTitle(), Toast.LENGTH_SHORT).show();
 
-                    Intent intent = new Intent(mContext, ChatRoomActivity.class);
+                        Intent intent = new Intent(mContext, ChatRoomActivity.class);
 
-                    intent.putExtra("username", mUsername);
-                    intent.putExtra("roomtitle", currentRoom.getTitle());
-                    // start new activity outside of activity
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    mContext.startActivity(intent);
+                        intent.putExtra("username", mUsername);
+                        intent.putExtra("roomtitle", currentRoom.getId());
+                        // start new activity outside of activity
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        mContext.startActivity(intent);
+                    }
                 }
             });
         }
+
+
     }
 
 
@@ -76,6 +82,13 @@ public class LocRecoRecyclerViewAdapter extends RecyclerView.Adapter<LocRecoRecy
     public void onBindViewHolder(ViewHolder viewHolder, int position) {
         viewHolder.roomTitle.setText(mChatRooms.get(position).getTitle());
         viewHolder.currentRoom = mChatRooms.get(position);
+        viewHolder.clickable=mChatRooms.get(position).getClick();
+        if(!viewHolder.clickable) {
+            viewHolder.roomTitle.setTextColor(mChatRooms.get(position).getColor());
+            viewHolder.cardView.setBackgroundColor(mChatRooms.get(position).getBackColor());
+        }
+        //viewHolder.color=mChatRooms.get(position).getColor();
+
     }
 
 

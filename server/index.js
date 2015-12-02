@@ -10,7 +10,7 @@ var User = require('./user.js');
 
 var mongoose = require('mongoose');
 
-mongoose.connect('mongodb://127.0.0.1:27017/geoLive');
+mongoose.connect('mongodb://127.0.0.1:27017/project');
 
 
 var roomSchema = new mongoose.Schema({ id: 'string', name: 'string',num_users: 'number', location:{type:[Number], index:'2dsphere'} });
@@ -89,33 +89,11 @@ users_data.find().stream()
   });
 
 
-rooms_data.find({}).sort({num_users: -1}).limit(10).exec( 
-    function(err, room_info) {
-        //???
-        if(err){
-        	console.log(err);
-        }else{
-	        var result = room_info.map(function(r){return r.id;});
-	        console.log("popular:")
-	        console.log(result);
-	        //socket.emit('popular results', {roomname: result});
-	    }
-    });
 
 
 
-rooms_data.find({location: {'$near':{'$geometry':{ type: 'Point', coordinates:[-9,63]}}}}).limit(10).exec(
-//rooms_data.find({location: {'$near':{[52,65]}}).exec(
-    function(err, room_info){
-    	if(err){
-    		console.log(err);
-    	}else{
-    		var result = room_info.map(function(r){return r.id;});
-    		console.log("geo:")
-    		console.log(result);
-    		//socke.emit('nearby results',{roomname: result})
-    	}
-}); 
+
+
 
 
 
@@ -158,6 +136,72 @@ io.on('connection', function (socket) {
   });
 
 
+  socket.on('main page',function(data){
+    console.log("main page");
+
+    var popular_room;
+    var popular_room_name;
+    var nearby_room;
+    var nearby_room_name;
+
+    rooms_data.find({}).sort({num_users: -1}).limit(10).exec( 
+    function(err, room_info) {
+        //???
+        if(err){
+          console.log(err);
+        }else{
+          popular_room=room_info.map(function(r){return r.id;});
+          popular_room_name=room_info.map(function(r){return r.name;});
+          //console.log("popular:")
+          //console.log(result);
+          socket.emit('popular results', {
+            popular_room: popular_room,
+            popular_room_name:popular_room_name
+          });
+
+          console.log(popular_room_name);
+
+      }
+    });
+
+
+
+    rooms_data.find({location: {'$near':{'$geometry':{ type: 'Point', coordinates:[data["longitude"],data["latitude"]]}}}}).limit(10).exec(
+//rooms_data.find({location: {'$near':{[52,65]}}).exec(
+    function(err, room_info){
+      if(err){
+        console.log(err);
+      }else{
+        //var result = room_info.map(function(r){return r.id;});
+        //console.log("geo:");
+        //console.log(result);
+
+        //nearby_room=result;
+
+        nearby_room=room_info.map(function(r){return r.id;});
+        nearby_room_name=room_info.map(function(r){return r.name;});
+        socket.emit('nearby results',{
+          nearby_room: nearby_room,
+          nearby_room_name:nearby_room_name
+        });
+
+        console.log(nearby_room_name);
+      }
+      });
+
+      //console.log(popular_room);
+
+      //console.log(popular_room_name);
+
+      //console.log(nearby_room);
+
+      //console.log(nearby_room_name);
+
+  });
+
+
+ 
+  
 
 //-------------------------stage 2:search room--------------------------------
 
@@ -255,21 +299,43 @@ io.on('connection', function (socket) {
 //-------------------------stage 3:enter room--------------------------------
 
 
+  socket.on('show people',function (data){
+    console.log('show people');
+
+
+
+
+
+      users_data.find({ roomid: socket.roomid },'name',function (err, user_info) {
+//             // You get a model instance all setup and ready!
+       var result = user_info.map(function(r) { return r.name; });
+
+       socket.emit('show people', {
+        people: result
+       });
+
+       console.log('show people',result);
+      //db.close();
+       //socket.emit('search result', {
+       //  roomname: result
+       //});
+      });
+
+  });
+
   socket.on('create room', function (data) {
     // we store the username in the socket session for this client
     // console.log(data);
 
     console.log('create room');
 
-
-    var parsedData = JSON.parse(data);
+    //var parsedData = JSON.parse(data);
     // console.log(parsedData["username"], parsedData["roomid"]);
 
     //socket.username = parsedData["username"];
-    socket.roomid = parsedData["roomid"];
-    socket.roomname = parsedData["roomname"];
+    socket.roomid = data["roomid"];
+    socket.roomname = data["roomname"];
  
-
     var numUsers=1;
     if(rooms[socket.roomid] == null){
         //create a new room
@@ -278,7 +344,7 @@ io.on('connection', function (socket) {
         var room = new Room(socket.roomname, socket.roomid,0);
         room.addPerson(socket.username);
         rooms[socket.roomid] = room;
-        var demoRoom = new rooms_data({ id:socket.roomid , name: socket.roomname, num_users: 1 });
+        var demoRoom = new rooms_data({ id:socket.roomid , name: socket.roomname, num_users: 1 ,location:[data["longitude"],data["latitude"]]});
 
         demoRoom.save(function (err){
             console.log('Inserted',socket.roomid);
@@ -297,18 +363,20 @@ io.on('connection', function (socket) {
   });
 
 
-
   socket.on('add user', function (data) {
     // we store the username in the socket session for this client
     // console.log(data);
 
-    console.log('add user');
+    console.log('add user',data);
 
-    var parsedData = JSON.parse(data);
+    //var parsedData = JSON.parse(data);
     // console.log(parsedData["username"], parsedData["roomid"]);
 
     //socket.username = parsedData["username"];
-    socket.roomid = parsedData["roomid"];
+    socket.roomid = data["roomid"];
+
+
+    console.log('roomid',socket.roomid);
 
 
     var numUsers=1;
@@ -356,6 +424,7 @@ io.on('connection', function (socket) {
     }
     
   });
+
 
 
 

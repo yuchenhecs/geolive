@@ -29,6 +29,8 @@ public class CreateroomActivity extends AppCompatActivity{
     EditText mRoomID;
     private String mUsername;
     private Socket mSocket;
+    private String x, y;
+
 
     {
         try {
@@ -52,8 +54,11 @@ public class CreateroomActivity extends AppCompatActivity{
 
         Intent intent = getIntent();
         mUsername = intent.getStringExtra("username");
+        x = intent.getStringExtra("x");
+        y = intent.getStringExtra("y");
         mRoomName = (EditText) findViewById(R.id.name);
         mRoomID = (EditText) findViewById(R.id.roomid);
+
         mCreateButtom = (Button) findViewById(R.id.create);
        // Toast.makeText(this, mRoomName.getText(), Toast.LENGTH_SHORT).show();
        // Toast.makeText(this, mRoomID.getText(), Toast.LENGTH_SHORT).show();
@@ -98,9 +103,13 @@ public class CreateroomActivity extends AppCompatActivity{
         JSONObject data = new JSONObject();
        // Toast.makeText(this, "check", Toast.LENGTH_SHORT).show();
 
-        try{
-            data.put("username", mRoomName.getText());
+        try {
+            data.put("username", mUsername);
+            data.put("roomname", mRoomName.getText());
             data.put("roomid", mRoomID.getText());
+
+            data.put("longitude", x);
+            data.put("latitude", y);
         }
         catch(JSONException e){
             e.printStackTrace();
