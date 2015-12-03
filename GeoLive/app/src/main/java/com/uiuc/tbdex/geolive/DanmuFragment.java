@@ -214,6 +214,8 @@ public class DanmuFragment extends Fragment {
 
 
     private int getRandomTopMargin() {
+        int azusa = 0; // avoid stuck
+
         Log.d("Danmu", Integer.toString(mDanmuContainer.getHeight()));
 //        if (mVerticalSpace == 0) {
 //        Rect rect = new Rect();
@@ -230,8 +232,10 @@ public class DanmuFragment extends Fragment {
         int totalLines = mVerticalSpace/mTextSizeInPx;
 
         int proposedLine = mRandom.nextInt(totalLines);
-        while (mOccupiedLine.contains(proposedLine)) {
+        while (mOccupiedLine.contains(proposedLine) && azusa < 10) {
+            Log.d("Danmu", "Not enough space");
             proposedLine = mRandom.nextInt(totalLines);
+            azusa++;
         }
 
         mOccupiedLine.add(proposedLine);

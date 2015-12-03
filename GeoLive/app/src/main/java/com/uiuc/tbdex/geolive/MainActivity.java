@@ -122,14 +122,7 @@ public class MainActivity extends AppCompatActivity
         initializeAdapter();
 
         mSocket.connect();
-        mButton = (Button) findViewById(R.id.button);
-        mButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), DanmuActivity.class);
-                startActivity(intent);
-            }
-        });
+
 
         findViewById(R.id.pink_icon).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -160,10 +153,6 @@ public class MainActivity extends AppCompatActivity
         //locRecoRecyclerViewAdapter.notifyDataSetChanged();
         mSocket.on("popular results", onPopularResults);
         mSocket.on("nearby results", onNearbyResults);
-
-
-
-
 
     }
 
