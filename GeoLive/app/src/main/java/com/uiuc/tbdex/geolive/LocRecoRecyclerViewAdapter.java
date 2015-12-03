@@ -42,7 +42,7 @@ public class LocRecoRecyclerViewAdapter extends RecyclerView.Adapter<LocRecoRecy
 
                         Intent intent = new Intent(mContext, Chat.class);
 
-                        intent.putExtra("username", mUsername);
+                        intent.putExtra("username", Constants.USERNAME);
                         intent.putExtra("roomtitle", currentRoom.getId());
                         // start new activity outside of activity
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
