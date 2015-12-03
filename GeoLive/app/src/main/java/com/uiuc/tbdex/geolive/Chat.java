@@ -60,6 +60,11 @@ public class Chat extends AppCompatActivity {
         mUsername = intent.getStringExtra("username");
         mRoomTitle = intent.getStringExtra("roomtitle");
 
+        Fragment chatFragment = new ChatFragment();
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        transaction.add(R.id.fragment_container, chatFragment, "CHAT");
+        transaction.commit();
+
         Button buttonList = (Button)findViewById(R.id.button_list);
         buttonList.setOnClickListener(new View.OnClickListener() {
             @Override

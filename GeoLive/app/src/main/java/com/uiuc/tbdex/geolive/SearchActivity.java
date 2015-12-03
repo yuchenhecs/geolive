@@ -230,7 +230,10 @@ public class SearchActivity extends AppCompatActivity {
                     array = data.getJSONArray("keywords");
 
                     for (int i = 0; i < array.length(); i++) {
-                        mTopKResult.add(array.getString(i));
+                        String temp = array.getString(i);
+                        // TODO: don't hard code this
+                        String[] tempArray = temp.split("\"");
+                        mTopKResult.add(tempArray[3]);
                     }
                 } catch (JSONException e) {
                     return;
