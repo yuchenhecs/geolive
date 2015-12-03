@@ -86,7 +86,7 @@ public class ChatFragment extends Fragment {
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getActivity().getApplicationContext(), "sending", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getActivity().getApplicationContext(), "sending", Toast.LENGTH_SHORT).show();
                 attemptSend();
             }
         });
@@ -139,7 +139,7 @@ public class ChatFragment extends Fragment {
 
     private void attemptSend() {
 
-        Toast.makeText(getActivity().getApplicationContext(), mUsername, Toast.LENGTH_SHORT).show();
+//        Toast.makeText(getActivity().getApplicationContext(), mUsername, Toast.LENGTH_SHORT).show();
 
         if (mUsername == null) return;
         //if (!mSocket.connected()) return;
@@ -166,7 +166,7 @@ public class ChatFragment extends Fragment {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(getActivity().getApplicationContext(), "receiving", Toast.LENGTH_SHORT);
+//                    Toast.makeText(getActivity().getApplicationContext(), "receiving", Toast.LENGTH_SHORT);
 
                     org.json.JSONObject data = (org.json.JSONObject) args[0];
 //                    JSONObject data = (JSONObject) args[0];
@@ -200,7 +200,7 @@ public class ChatFragment extends Fragment {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(getActivity().getApplicationContext(), "Join", Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(getActivity().getApplicationContext(), "Join", Toast.LENGTH_SHORT).show();
                     org.json.JSONObject data = (org.json.JSONObject) args[0];
                     String username;
                     int numUsers;

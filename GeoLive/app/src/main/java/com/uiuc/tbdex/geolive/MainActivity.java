@@ -151,7 +151,7 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
                 Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
                         mGoogleApiClient);
-                Toast.makeText(getApplicationContext(), String.valueOf(mLastLocation.getLatitude()) + "," + String.valueOf(mLastLocation.getLongitude()), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getApplicationContext(), String.valueOf(mLastLocation.getLatitude()) + "," + String.valueOf(mLastLocation.getLongitude()), Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -179,7 +179,7 @@ public class MainActivity extends AppCompatActivity
     public void onSectionAttached(int number) {
         switch (number) {
             case 1:
-                mTitle = getString(R.string.title_section1);
+                mTitle = "GeoLive";
                 break;
             case 2:
                 mTitle = getString(R.string.title_section2);
@@ -404,7 +404,7 @@ public class MainActivity extends AppCompatActivity
                             popularRoom.add(array.getString(i));
                         }
 
-                        Toast.makeText(getApplicationContext(), "asdasdasdas", Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(getApplicationContext(), "asdasdasdas", Toast.LENGTH_SHORT).show();
 
                         array = data.getJSONArray("popular_room_name");
                         for (int i = 0; i < array.length(); i++) {
@@ -422,7 +422,7 @@ public class MainActivity extends AppCompatActivity
                         //locRecoRecyclerViewAdapter.notifyDataSetChanged();
 
                     } catch (JSONException e) {
-                        Toast.makeText(getApplicationContext(), e.toString() , Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(getApplicationContext(), e.toString() , Toast.LENGTH_SHORT).show();
                         return;
                     }
 
@@ -451,7 +451,7 @@ public class MainActivity extends AppCompatActivity
                             nearbyRoom.add(array.getString(i));
                         }
 
-                        Toast.makeText(getApplicationContext(), "zzzzzzzzzzzzz", Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(getApplicationContext(), "zzzzzzzzzzzzz", Toast.LENGTH_SHORT).show();
 
                         array = data.getJSONArray("nearby_room_name");
                         for (int i = 0; i < array.length(); i++) {
@@ -469,7 +469,7 @@ public class MainActivity extends AppCompatActivity
                         //locRecoRecyclerViewAdapter.notifyDataSetChanged();
 
                     } catch (JSONException e) {
-                        Toast.makeText(getApplicationContext(), e.toString() , Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(getApplicationContext(), e.toString() , Toast.LENGTH_SHORT).show();
                         return;
                     }
 

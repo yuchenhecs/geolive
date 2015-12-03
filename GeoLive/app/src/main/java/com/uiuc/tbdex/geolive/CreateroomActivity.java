@@ -67,7 +67,7 @@ public class CreateroomActivity extends AppCompatActivity{
             @Override
             public void onClick(View v) {
                 doCreateRoom();
-                Intent intent = new Intent(CreateroomActivity.this , ChatRoomActivity.class);
+                Intent intent = new Intent(CreateroomActivity.this , Chat.class);
                 intent.putExtra("username", mUsername);
                 //String roomtitle = mRoomID.getText().toString();
                 intent.putExtra("roomtitle", mRoomID.getText().toString());
