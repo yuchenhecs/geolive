@@ -357,6 +357,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private void startMainActivity() {
         Intent intent = new Intent(this, MainActivity.class);
         intent.putExtra("username", mUsername);
+        Constants.USERNAME = mUsername;
         startActivity(intent);
     }
 

@@ -15,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -271,7 +272,7 @@ public class SearchActivity extends AppCompatActivity {
                 public void run() {
                     JSONObject data = (JSONObject) args[0];
                     JSONArray array;
-                    ArrayList<String> element = new ArrayList<String>();
+                    final ArrayList<String> element = new ArrayList<String>();
                     try {
                         array = data.getJSONArray("roomname");
 
@@ -297,6 +298,16 @@ public class SearchActivity extends AppCompatActivity {
                     };
 
                     mListView.setAdapter(mAdapter);
+                    mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                            Log.d("SearchView", element.get(position));
+                            Intent intent = new Intent(getApplicationContext(), Chat.class);
+                            intent.putExtra("username", Constants.USERNAME);
+                            intent.putExtra("roomtitle", element.get(position));
+                            startActivity(intent);
+                        }
+                    });
                 }
             });
         }
