@@ -1,9 +1,10 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.uiuc.tbdex.geolive.DanmuActivity">
+    tools:context=".MainFragment">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -19,13 +20,7 @@
         android:paddingLeft="@dimen/activity_horizontal_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:orientation="horizontal"
-        android:id="@+id/linearLayout">
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="List"
-            android:id="@+id/chatroom_button" />
+        android:gravity="center_vertical">
 
         <EditText
             android:id="@+id/message_input"
@@ -39,6 +34,7 @@
             android:inputType="text"
             android:maxLines="1"
             android:singleLine="true"/>
+
         <Button
             style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"

@@ -1,19 +1,18 @@
 package com.uiuc.tbdex.geolive;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.graphics.Rect;
-import android.graphics.drawable.LayerDrawable;
-import android.os.*;
-import android.support.v7.app.AppCompatActivity;
+import android.net.Uri;
+import android.os.Bundle;
+import android.app.Fragment;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewTreeObserver;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.EditorInfo;
@@ -21,38 +20,39 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
-import android.widget.RelativeLayout.LayoutParams;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.simple.JSONObject;
 
 import java.lang.ref.WeakReference;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
-import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
 
-public class DanmuActivity extends AppCompatActivity {
+public class DanmuFragment extends Fragment {
+    private String mUsername;
+    private String mRoomTitle;
+    private Socket mSocket;
 
     private EditText mInputMessageView;
-
-
 
     // Danmu
     private DanmuHandler mDanmuHandler;
     private RelativeLayout mDanmuContainer;
 
     private ArrayList<Danmu> mDanmus = new ArrayList<>();
-//    private ArrayList<Danmu> mTestDanmus;
+
+    public ArrayList<Danmu> getmDanmus() {
+        return mDanmus;
+    }
+    //    private ArrayList<Danmu> mTestDanmus;
 
     private int mVerticalSpace = 0;
     private Set<Integer> mOccupiedLine = new HashSet<>();
@@ -62,28 +62,30 @@ public class DanmuActivity extends AppCompatActivity {
     protected int mTextSize = 20;
     protected int mTextSizeInPx;
 
-    // SocketIO
-    private String mUsername;
-    private String mRoomTitle;
-    private Socket mSocket;
-    {
-        try {
-            mSocket = IO.socket(Constants.CHAT_SERVER_URL);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+
+    public DanmuFragment() {
+        // Required empty public constructor
     }
 
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_danmu);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_danmu, container, false);
+    }
 
-        final Intent intent = getIntent();
-        mUsername = intent.getStringExtra("username");
-        mRoomTitle = intent.getStringExtra("roomtitle");
 
-        mInputMessageView = (EditText) findViewById(R.id.message_input);
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        mUsername = ((Chat) getActivity()).getmUsername();
+        mRoomTitle = ((Chat) getActivity()).getmRoomTitle();
+        mSocket = ((Chat) getActivity()).getmSocket();
+
+        // edit text
+        mInputMessageView = (EditText) getView().findViewById(R.id.message_input);
         mInputMessageView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -96,143 +98,53 @@ public class DanmuActivity extends AppCompatActivity {
         });
 
         // send button
-        ImageButton sendButton = (ImageButton) findViewById(R.id.send_button);
+        ImageButton sendButton = (ImageButton) getView().findViewById(R.id.send_button);
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                Toast.makeText(getApplicationContext(), "sending", Toast.LENGTH_SHORT).show();
-                Log.d("Danmu", "sending");
+                Toast.makeText(getActivity().getApplicationContext(), "sending", Toast.LENGTH_SHORT).show();
                 attemptSend();
             }
         });
 
-        Button showButton = (Button) findViewById(R.id.showButton);
-        showButton.setOnClickListener(new View.OnClickListener(){
+        Button showButton = (Button) getView().findViewById(R.id.showButton);
+        showButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v){
-                String data=null;
+            public void onClick(View v) {
+                String data = null;
                 mSocket.emit("show people", data);
             }
         });
 
-        Button chatroomButton = (Button) findViewById(R.id.chatroom_button);
-        chatroomButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent startChatroomIntent = new Intent(DanmuActivity.this, ChatRoomActivity.class);
-                startChatroomIntent.putExtra("username", mUsername);
-                startChatroomIntent.putExtra("roomtitle", mRoomTitle);
-                startActivity(startChatroomIntent);
-            }
-        });
+        mDanmuContainer = (RelativeLayout) getView().findViewById(R.id.danmu_container);
 
-        mDanmuContainer = (RelativeLayout) findViewById(R.id.danmu_container);
-//        ViewTreeObserver vto = mDanmuContainer.getViewTreeObserver();
-//        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-//            @Override
-//            public void onGlobalLayout() {
-//                LayerDrawable ld = (LayerDrawable)mDanmuContainer.getBackground();
-//                ld.setLayerInset(1, 0, mDanmuContainer.getHeight() / 2, 0, 0);
-//                ViewTreeObserver obs = mDanmuContainer.getViewTreeObserver();
-//
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-//                    obs.removeOnGlobalLayoutListener(this);
-//                } else {
-//                    obs.removeGlobalOnLayoutListener(this);
-//                }
-//            }
-//        });
+        mTextSizeInPx = ScreenUtils.dp2px(getActivity().getApplicationContext(), mTextSize);
 
-        mTextSizeInPx = ScreenUtils.dp2px(getApplicationContext(), mTextSize);
-//        mVerticalSpace = mDanmuContainer.getMeasuredHeight() - mTextSizeInPx - 30;
+        mDanmuHandler = new DanmuHandler((Chat)getActivity());
 
-//        Log.d("Danmu", Integer.toString(mVerticalSpace));
-//        Log.d("Danmu", Integer.toString(mTextSizeInPx));
-
-//        mTestDanmus = new ArrayList<>();
-//        mTestDanmus.add(new Danmu("前方福利"));
-//        mTestDanmus.add(new Danmu("见福打"));
-//        mTestDanmus.add(new Danmu("23333333333333"));
-//        mTestDanmus.add(new Danmu("Let's go, 王宝强"));
-
-        mDanmuHandler = new DanmuHandler(this);
-
-//        new Thread(new CreateDanmu()).start();
-
-        // socket.io
-        setUpSocketIo();
-
-//        attemptLogin();
+        mSocket.on("new message", onNewMessage);
+        mSocket.on("user joined", onUserJoined);
+        mSocket.on("user left", onUserLeft);
+        mSocket.on("show people", onShowPeople);
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        attemptLogin();
-    }
 
     @Override
     public void onStop() {
         super.onStop();
 
-        String data=null;
-        mSocket.emit("leave room", data);
-    }
-
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-
-//        mSocket.disconnect();
-        mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
-        mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
         mSocket.off("new message", onNewMessage);
         mSocket.off("user joined", onUserJoined);
         mSocket.off("user left", onUserLeft);
+        mSocket.off("show people", onShowPeople);
     }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_danmu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-
-//    private class CreateDanmu implements Runnable {
-//
-//        @Override
-//        public void run() {
-//            for (int i = 0; i < mTestDanmus.size(); i++) {
-//                mDanmuHandler.obtainMessage(1, i, 0).sendToTarget();
-//                SystemClock.sleep(500);
-//            }
-//        }
-//    }
 
 
     private static class DanmuHandler extends Handler {
-        private WeakReference<DanmuActivity> ref;
+        private WeakReference<Chat> ref;
 
-        DanmuHandler(DanmuActivity danmuActivity) {
-            ref = new WeakReference<DanmuActivity>(danmuActivity);
+        DanmuHandler(Chat chat) {
+            ref = new WeakReference<Chat>(chat);
         }
 
         @Override
@@ -240,15 +152,16 @@ public class DanmuActivity extends AppCompatActivity {
             super.handleMessage(msg);
 
             if (msg.what == 1) {
-                DanmuActivity danmuActivity = ref.get();
+                Chat chat = ref.get();
 //                if (danmuActivity != null && danmuActivity.mTestDanmus != null) {
 //                    String content = danmuActivity.mTestDanmus.get(msg.arg1).getContent();
 //
 //                    danmuActivity.showDanmu(content);
 //                }
-                if (danmuActivity != null) {
-                    String content = danmuActivity.mDanmus.get(msg.arg1).getContent();
-                    danmuActivity.showDanmu(content);
+                if (chat != null) {
+                    String content = ((DanmuFragment)chat.getFragmentManager().findFragmentByTag("DANMU"))
+                            .getmDanmus().get(msg.arg1).getContent();
+                    ((DanmuFragment)chat.getFragmentManager().findFragmentByTag("DANMU")).showDanmu(content);
                 }
             }
         }
@@ -256,9 +169,9 @@ public class DanmuActivity extends AppCompatActivity {
 
 
     private void showDanmu(String content) {
-        final TextView textView = new TextView(getApplicationContext());
+        final TextView textView = new TextView(getActivity().getApplicationContext());
 
-        final LayoutParams layoutParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        final RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
 //        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         layoutParams.topMargin = getRandomTopMargin();
@@ -273,7 +186,7 @@ public class DanmuActivity extends AppCompatActivity {
         textView.setTextColor(0xff000000);
         textView.setSingleLine(true);
 
-        Animation animation = new TranslateAnimation(leftMargin, -ScreenUtils.getScreenW(getApplicationContext()), 0, 0);
+        Animation animation = new TranslateAnimation(leftMargin, -ScreenUtils.getScreenW(getActivity().getApplicationContext()), 0, 0);
         animation.setDuration(5000);
         animation.setFillAfter(true);
 
@@ -306,7 +219,7 @@ public class DanmuActivity extends AppCompatActivity {
 //        Rect rect = new Rect();
 //        mDanmuContainer.getWindowVisibleDisplayFrame(rect);
 //        mVerticalSpace = rect.height() - mTextSizeInPx - 30;
-            mVerticalSpace = mDanmuContainer.getHeight() - mTextSizeInPx - 30;
+        mVerticalSpace = mDanmuContainer.getHeight() - mTextSizeInPx - 30;
 //        }
 
 //        Log.d("Danmu", Integer.toString(rect.height()));
@@ -332,13 +245,6 @@ public class DanmuActivity extends AppCompatActivity {
 //        return mRandom.nextInt(mVerticalSpace);
     }
 
-    private void attemptLogin() {
-        JSONObject data = new JSONObject();
-        data.put("username", mUsername);
-        data.put("roomid", mRoomTitle);
-
-        mSocket.emit("add user", data);
-    }
 
     private void addMessage(String username, String message) {
 //        mMessages.add(new Message.Builder(Message.TYPE_MESSAGE)
@@ -382,30 +288,13 @@ public class DanmuActivity extends AppCompatActivity {
     }
 
 
-    private void setUpSocketIo() {
-        mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
-        mSocket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
-        mSocket.on("new message", onNewMessage);
-        mSocket.on("user joined", onUserJoined);
-        mSocket.on("user left", onUserLeft);
-        mSocket.on("show people",onShowPeople);
-//        mSocket.on("typing", onTyping);
-//        mSocket.on("stop typing", onStopTyping);
-
-        mSocket.connect();
-
-//        if (mSocket.connected()) {
-//            Toast.makeText(getApplicationContext(), "connected", Toast.LENGTH_SHORT);
-//        }
-    }
-
     private Emitter.Listener onNewMessage = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
-            runOnUiThread(new Runnable() {
+            getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(getApplicationContext(), "receiving", Toast.LENGTH_SHORT);
+                    Toast.makeText(getActivity().getApplicationContext(), "receiving", Toast.LENGTH_SHORT);
 
                     org.json.JSONObject data = (org.json.JSONObject) args[0];
 //                    JSONObject data = (JSONObject) args[0];
@@ -436,10 +325,10 @@ public class DanmuActivity extends AppCompatActivity {
     private Emitter.Listener onUserJoined = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
-            runOnUiThread(new Runnable() {
+            getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(getApplicationContext(), "Join", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity().getApplicationContext(), "Join", Toast.LENGTH_SHORT).show();
                     org.json.JSONObject data = (org.json.JSONObject) args[0];
                     String username;
                     int numUsers;
@@ -460,7 +349,7 @@ public class DanmuActivity extends AppCompatActivity {
     private Emitter.Listener onUserLeft = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
-            runOnUiThread(new Runnable() {
+            getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     org.json.JSONObject data = (org.json.JSONObject) args[0];
@@ -481,23 +370,11 @@ public class DanmuActivity extends AppCompatActivity {
         }
     };
 
-    private Emitter.Listener onConnectError = new Emitter.Listener() {
-        @Override
-        public void call(Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getApplicationContext(),
-                            R.string.error_connect, Toast.LENGTH_LONG).show();
-                }
-            });
-        }
-    };
 
     private Emitter.Listener onShowPeople = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
-            runOnUiThread(new Runnable() {
+            getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     org.json.JSONObject data = (org.json.JSONObject) args[0];
@@ -514,10 +391,9 @@ public class DanmuActivity extends AppCompatActivity {
                     }
 
 
-
                     final CharSequence[] charSequenceItems = element.toArray(new CharSequence[element.size()]);
 
-                    AlertDialog.Builder builder = new AlertDialog.Builder(DanmuActivity.this);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                     builder.setTitle("People in this room");
                     builder.setItems(charSequenceItems, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int item) {
@@ -531,17 +407,4 @@ public class DanmuActivity extends AppCompatActivity {
         }
     };
 
-    @Override
-    public void onBackPressed() {
-        String data=null;
-        mSocket.emit("leave room", data);
-        mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
-        mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
-        mSocket.off("new message", onNewMessage);
-        mSocket.off("user joined", onUserJoined);
-        mSocket.off("user left", onUserLeft);
-
-        Intent backMain = new Intent(this, MainActivity.class);
-        startActivity(backMain);
-    }
 }

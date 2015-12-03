@@ -60,4 +60,8 @@
     <string name="title_activity_search">SearchActivity</string>
     <string name="title_activity_danmu">DanmuActivity</string>
     <string name = "title_activity_createroom">CreateroomActivity</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_chat">ChatActivity</string>
 </resources>

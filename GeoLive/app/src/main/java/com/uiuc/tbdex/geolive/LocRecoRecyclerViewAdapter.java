@@ -38,7 +38,9 @@ public class LocRecoRecyclerViewAdapter extends RecyclerView.Adapter<LocRecoRecy
                     if(clickable) {
                         Toast.makeText(v.getContext(), currentRoom.getTitle(), Toast.LENGTH_SHORT).show();
 
-                        Intent intent = new Intent(mContext, ChatRoomActivity.class);
+//                        Intent intent = new Intent(mContext, ChatRoomActivity.class);
+
+                        Intent intent = new Intent(mContext, Chat.class);
 
                         intent.putExtra("username", mUsername);
                         intent.putExtra("roomtitle", currentRoom.getId());
